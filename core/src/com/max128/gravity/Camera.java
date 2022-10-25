@@ -1,34 +1,13 @@
 package com.max128.gravity;
 
+import com.badlogic.gdx.math.Vector2;
+
 public class Camera {
-	Vector pos;
-	float scale;
-
-	public Camera() {
-		scale = 0.001f;
-		pos = new Vector(0, 0);
-	}
-
-	/**
-	 * Moves the camera by the vector given
-	 * 
-	 * @param mov ,a directional Vector
-	 */
-	public void moveCamera(Vector mov) {
-		if (mov != null) {
-			pos.add(mov.scl((float) 1 / scale));
-		}
-	}
-
-	/**
-	 * Scales the scale of the camera by the scrolled amount given
-	 * 
-	 * @param amount ,a Integer
-	 */
-	public void zoomCamera(int amount) {
-		scale += (float) (scale * amount * -0.03f);
-		if (scale < 0) {
-			scale *= -1;
-		}
+	Vector2 pos;
+	float scale; //How many Pixels represent one meter in the simulation
+	
+	public Camera(float x, float y, float scale) {
+		pos = new Vector2(x,y);
+		this.scale = scale;
 	}
 }

@@ -1,13 +1,26 @@
 package com.max128.gravity;
 
-//Controller, Model
-public class Particle extends Entity {
-	float r;
-	Vector vel;
+import com.badlogic.gdx.math.Vector2;
 
-	public Particle(float x, float y, float m, float r, float vx, float vy) {
-		super(x, y, m);
-		vel = new Vector(vx, vy);
+public class Particle {
+	Vector2 pos;
+	Vector2 vel;
+	float r;
+	float m;
+
+	
+	/**
+	 * @param x ,position x of the particle
+	 * @param y ,position y of the particle
+	 * @param vx ,x-velocity of the particle
+	 * @param vy ,y-velocity of the particle
+	 * @param m ,mass of the paricle
+	 * @param r ,radius of the particle
+	 */
+	public Particle(float x, float y, float vx, float vy, float m, float r) {
+		pos = new Vector2(x, y);
+		vel = new Vector2(vx, vy);
 		this.r = r;
+		this.m = m;
 	}
 }
