@@ -10,8 +10,10 @@ public class EntityManager {
 
 	public EntityManager() {
 		p = new Array<Particle>();
-		p.add(new Particle(0, 0, 0.1f, 0, 1E13f, 100));
-		p.add(new Particle(0, 100, -0.1f, 0, 1E13f, 100));
+		p.add(new Particle(0, 0, 2.0f, 0, 1E15f, 10));
+		p.add(new Particle(0, 100, -1f, 0, 1E15f, 10));
+		p.add(new Particle(0, 1000, 1f, 0, 1E15f, 10));
+		p.add(new Particle(0, 1100, -2f, 0, 1E15f, 10));
 	}
 
 	public void moveParticles(float dt) {

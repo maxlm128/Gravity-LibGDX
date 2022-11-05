@@ -13,8 +13,8 @@ public class DesktopLauncher {
 		config.setIdleFPS(1);
 		config.useVsync(true);
 		config.setTitle("Gravity");
-		config.setWindowedMode(GUI.WIDTH, GUI.HEIGHT);
-		new Lwjgl3Application(new GUI(), config);
+		config.setWindowedMode(Main.WIDTH, Main.HEIGHT);
+		new Lwjgl3Application(new Main(), config);
 	}
 
 }
