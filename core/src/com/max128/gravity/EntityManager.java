@@ -7,21 +7,25 @@ public class EntityManager {
 
 	Array<Particle> p;
 	final protected float G = 6.6743E-11f;
+	boolean running;
 
 	public EntityManager() {
+		running = true;
 		p = new Array<Particle>();
 		p.add(new Particle(0, 0, 2.0f, 0, 1E15f, 10));
 		p.add(new Particle(0, 100, -1f, 0, 1E15f, 10));
 		p.add(new Particle(0, 1000, 1f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1100, -2f, 0, 1E15f, 10));
+		p.add(new Particle(0, 1100, -2f, 0, 1E15f, 20));
 	}
 
 	public void moveParticles(float dt) {
-		for (int i = 0; i < Main.STEPS; i++) {
-			calcGravity(dt);
-			for (Particle p : p) {
-				resolveCollision(p);
-				p.pos.add(p.vel);
+		if (running) {
+			for (int i = 0; i < Main.STEPS; i++) {
+				calcGravity(dt);
+				for (Particle p : p) {
+					resolveCollision(p);
+					p.pos.add(p.vel);
+				}
 			}
 		}
 	}
@@ -33,7 +37,7 @@ public class EntityManager {
 				float l = dv.len2();
 				dv.nor().scl(G / l).scl(dt);
 				p.get(i).vel.add(dv.cpy().scl(p.get(j).m));
-				p.get(j).vel.add(dv.scl(p.get(i).m * -1));				
+				p.get(j).vel.add(dv.scl(p.get(i).m * -1));
 			}
 		}
 	}

@@ -3,10 +3,10 @@ package com.max128.gravity;
 import com.badlogic.gdx.math.Vector2;
 
 public class Particle {
-	Vector2 pos;
-	Vector2 vel;
-	float r;
-	float m;
+	Vector2 pos; //Position in meters
+	Vector2 vel; //Velocity in m/s
+	float r; //Radius in meters
+	float m; //Mass in kg
 
 	
 	/**
