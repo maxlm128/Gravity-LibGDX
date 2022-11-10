@@ -36,7 +36,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
-		gridViewport = new FillViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
+		gridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
 		eR = new EntityManager();
 		sR = new ShapeRenderer();
 		sR.setAutoShapeType(true);
@@ -44,8 +44,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		super.create();
 	}
 
+	@Override
 	public void resize(int width, int height) {
 		viewport.update(width, height);
+		gridViewport.update(width, height);
 	}
 
 	@Override
@@ -65,15 +67,15 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		gridCam.zoom = (float) ((cam.zoom) / factor);
 
 		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
-		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 10, 0,
+		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
 		}
-		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam.frustum.pointInFrustum(x + 10, 0,
+		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam.frustum.pointInFrustum(x + 4.5f, 0,
 				0); x -= 10) {
 			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
 		}
-		
+
 		for (float y = (float) ((-cam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
 				0); y += 10) {
 			sR.rectLine(-WIDTH / 2, y, WIDTH / 2, y, 9);
@@ -117,7 +119,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void zoomToTarget() {
-		if (Math.abs(cam.zoom - zoomTarget) >= 0.01f * cam.zoom) {
+		if (Math.abs(cam.zoom - zoomTarget) >= 0.001f * cam.zoom) {
 			cam.zoom = zoomTarget - ((zoomTarget - cam.zoom) * 0.95f);
 		} else if (cam.zoom != zoomTarget) {
 			cam.zoom = zoomTarget;
