@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -31,7 +30,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private boolean button_right;
 	private boolean button_out;
 	private boolean button_in;
-
+	
 	final static int WIDTH = 1920;
 	final static int HEIGHT = 1080;
 
@@ -73,32 +72,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Draw grid
-		float factor = (long) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 30))));
-		if (factor == 0) {
-			factor = 1;
-		}
-		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
-		Vector3 originLeft = cam.unproject(new Vector3(0, HEIGHT / 2, 0));
-		for (float y = originLeft.y; cam.frustum.pointInFrustum(originLeft.x, y - (factor * 10), 0); y += factor) {
-			sR.rectLine(originLeft.x, y - y % factor, originLeft.x + (WIDTH * cam.zoom), y - y % factor,
-					factor - factor / 10);
-		}
-		for (float y = originLeft.y - factor; cam.frustum.pointInFrustum(originLeft.x, y + (factor * 10),
-				0); y -= factor) {
-			sR.rectLine(originLeft.x, y - y % factor, originLeft.x + (WIDTH * cam.zoom), y - y % factor,
-					factor - factor / 10);
-		}
-
-		Vector3 originTop = cam.unproject(new Vector3(WIDTH / 2, HEIGHT, 0));
-		for (float x = originTop.x; cam.frustum.pointInFrustum(x, originTop.y, 0); x += factor) {
-			sR.rectLine(x - x % factor, originTop.y, x - x % factor, originTop.y + (HEIGHT * cam.zoom),
-					factor - factor / 10);
-		}
-		for (float x = originTop.x - factor; cam.frustum.pointInFrustum(x, originTop.y, 0); x -= factor) {
-			sR.rectLine(x - x % factor, originTop.y, x - x % factor, originTop.y + (HEIGHT * cam.zoom),
-					factor - factor / 10);
-		}
-
+//		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
+//		Vector3 origin = cam.unproject(new Vector3(0, HEIGHT / 2, 0));
+		
 		// Draw particles
 		for (Particle p : eR.getP()) {
 			sR.setColor(1, 1, 1, 1);
@@ -131,7 +107,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void zoomToTarget() {
-		if (Math.abs(cam.zoom - zoomTarget) >= 0.001f * cam.zoom) {
+		if (Math.abs(cam.zoom - zoomTarget) >= 0.01f * cam.zoom) {
 			cam.zoom = zoomTarget - ((zoomTarget - cam.zoom) * 0.95f);
 		} else if (cam.zoom != zoomTarget) {
 			cam.zoom = zoomTarget;
@@ -148,9 +124,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
 		zoomTarget += zoomTarget * amountY * 0.3f;
-		if (zoomTarget <= 0.002f) {
-			zoomTarget = 0.002f;
-		}
 		cam.update();
 		return true;
 	}
@@ -168,10 +141,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			eR.running = !eR.running;
 			break;
 		case BUTTON_F11:
-			if (!Gdx.graphics.isFullscreen()) {
+			if(!Gdx.graphics.isFullscreen()) {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 			} else {
-				Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
+				Gdx.graphics.setWindowedMode(WIDTH,HEIGHT);
 			}
 			break;
 		case BUTTON_ARROW_UP:
