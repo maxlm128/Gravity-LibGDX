@@ -2,6 +2,7 @@ package com.max128.gravity;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -12,25 +13,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class Main extends ApplicationAdapter implements InputProcessor {
-	private final int BUTTON_SPACE = 62;
-	private final int BUTTON_W = 51;
-	private final int BUTTON_S = 47;
-	private final int BUTTON_A = 29;
-	private final int BUTTON_D = 32;
-	private final int BUTTON_Q = 33;
-	private final int BUTTON_E = 45;
-	private final int BUTTON_F11 = 141;
-	private final int BUTTON_ARROW_UP = 19;
-	private final int BUTTON_ARROW_DOWN = 20;
 
-	// Booleans if the buttons are pressed
-	private boolean button_up;
-	private boolean button_down;
-	private boolean button_left;
-	private boolean button_right;
-	private boolean button_out;
-	private boolean button_in;
-	
 	final static int WIDTH = 1920;
 	final static int HEIGHT = 1080;
 
@@ -71,10 +54,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
-		// Draw grid
-//		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
-//		Vector3 origin = cam.unproject(new Vector3(0, HEIGHT / 2, 0));
-		
+		// TODO: Draw grid
+
 		// Draw particles
 		for (Particle p : eR.getP()) {
 			sR.setColor(1, 1, 1, 1);
@@ -86,22 +67,22 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void checkForInput() {
-		if (button_up) {
+		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			cam.position.y += 20f * cam.zoom;
 		}
-		if (button_down) {
+		if (Gdx.input.isKeyPressed(Input.Keys.S)) {
 			cam.position.y -= 20f * cam.zoom;
 		}
-		if (button_right) {
+		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
 			cam.position.x += 20f * cam.zoom;
 		}
-		if (button_left) {
+		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			cam.position.x -= 20f * cam.zoom;
 		}
-		if (button_in) {
+		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
 			zoomTarget += zoomTarget * 0.1f * 0.3f;
 		}
-		if (button_out) {
+		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
 			zoomTarget += zoomTarget * -0.1f * 0.3f;
 		}
 	}
@@ -137,67 +118,33 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean keyDown(int keycode) {
 		switch (keycode) {
-		case BUTTON_SPACE:
+		case Input.Keys.SPACE:
 			eR.running = !eR.running;
 			break;
-		case BUTTON_F11:
-			if(!Gdx.graphics.isFullscreen()) {
+		case Input.Keys.F11:
+			if (!Gdx.graphics.isFullscreen()) {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 			} else {
-				Gdx.graphics.setWindowedMode(WIDTH,HEIGHT);
+				Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
 			}
 			break;
-		case BUTTON_ARROW_UP:
+		case Input.Keys.UP:
 			eR.speed *= 2;
 			break;
-		case BUTTON_ARROW_DOWN:
+		case Input.Keys.DOWN:
 			eR.speed *= 0.5f;
 			break;
-		case BUTTON_W:
-			button_up = true;
-			break;
-		case BUTTON_S:
-			button_down = true;
-			break;
-		case BUTTON_A:
-			button_left = true;
-			break;
-		case BUTTON_D:
-			button_right = true;
-			break;
-		case BUTTON_E:
-			button_in = true;
-			break;
-		case BUTTON_Q:
-			button_out = true;
-			break;
+		case Input.Keys.R:
+			cam.position.setZero();
+			zoomTarget = 1f;
+			cam.zoom = 1f;
 		}
 		return true;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		switch (keycode) {
-		case BUTTON_W:
-			button_up = false;
-			break;
-		case BUTTON_S:
-			button_down = false;
-			break;
-		case BUTTON_A:
-			button_left = false;
-			break;
-		case BUTTON_D:
-			button_right = false;
-			break;
-		case BUTTON_E:
-			button_in = false;
-			break;
-		case BUTTON_Q:
-			button_out = false;
-			break;
-		}
-		return true;
+		return false;
 	}
 
 	@Override
