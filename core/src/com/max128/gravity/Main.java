@@ -61,14 +61,28 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Draw grid
-		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom))));
-		gridCam.zoom = (float) ((cam.zoom / 3f) / factor);
-		gridCam.update();
-		
+		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 3))));
+		gridCam.zoom = (float) ((cam.zoom) / factor);
+
 		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
-		for (float x = 0; x < WIDTH / 2; x += 10) {
-			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 1);
+		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 10, 0,
+				0); x += 10) {
+			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
 		}
+		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam.frustum.pointInFrustum(x + 10, 0,
+				0); x -= 10) {
+			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
+		}
+		
+		for (float y = (float) ((-cam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
+				0); y += 10) {
+			sR.rectLine(-WIDTH / 2, y, WIDTH / 2, y, 9);
+		}
+		for (float y = (float) ((-cam.position.y / factor) % 10) - 10; gridCam.frustum.pointInFrustum(0, y + 4.5f,
+				0); y -= 10) {
+			sR.rectLine(-WIDTH / 2, y, WIDTH / 2, y, 9);
+		}
+		gridCam.update();
 
 		// Draw particles
 		sR.setProjectionMatrix(viewport.getCamera().combined);
@@ -94,10 +108,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			cam.position.x -= 20f * cam.zoom;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
 			zoomTarget += zoomTarget * 0.1f * 0.3f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
 			zoomTarget += zoomTarget * -0.1f * 0.3f;
 		}
 	}
