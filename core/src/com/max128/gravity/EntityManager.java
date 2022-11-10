@@ -12,7 +12,6 @@ public class EntityManager {
 	boolean running;
 
 	public EntityManager() {
-		running = true;
 		p = new Array<Particle>();
 		p.add(new Particle(0, 0, 2.0f, 0, 1E15f, 10));
 		p.add(new Particle(0, 100, -1f, 0, 1E15f, 10));

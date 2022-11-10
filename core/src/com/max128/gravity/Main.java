@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class Main extends ApplicationAdapter implements InputProcessor {
@@ -22,7 +23,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private Vector2 lastPos;
 	private Viewport viewport;
+	private Viewport gridViewport;
 	private OrthographicCamera cam;
+	private OrthographicCamera gridCam;
 	private ShapeRenderer sR;
 	private EntityManager eR;
 
@@ -31,7 +34,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		zoomTarget = 1f;
 		lastPos = new Vector2();
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
+		gridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
+		gridViewport = new FillViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
 		eR = new EntityManager();
 		sR = new ShapeRenderer();
 		sR.setAutoShapeType(true);
@@ -51,38 +56,22 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		cam.update();
 
 		sR.begin();
-		sR.setProjectionMatrix(viewport.getCamera().combined);
+		sR.setProjectionMatrix(gridViewport.getCamera().combined);
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Draw grid
-		float factor = (long) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 30))));
-		if (factor == 0) {
-			factor = 1;
-		}
+		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom))));
+		gridCam.zoom = (float) ((cam.zoom / 3f) / factor);
+		gridCam.update();
+		
 		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
-		Vector3 originLeft = cam.unproject(new Vector3(0, HEIGHT / 2, 0));
-		for (float y = originLeft.y; cam.frustum.pointInFrustum(originLeft.x, y - (factor * 10), 0); y += factor) {
-			sR.rectLine(originLeft.x, y - y % factor, originLeft.x + (WIDTH * cam.zoom), y - y % factor,
-					factor - factor / 10);
-		}
-		for (float y = originLeft.y - factor; cam.frustum.pointInFrustum(originLeft.x, y + (factor * 10),
-				0); y -= factor) {
-			sR.rectLine(originLeft.x, y - y % factor, originLeft.x + (WIDTH * cam.zoom), y - y % factor,
-					factor - factor / 10);
+		for (float x = 0; x < WIDTH / 2; x += 10) {
+			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 1);
 		}
 
-		Vector3 originTop = cam.unproject(new Vector3(WIDTH / 2, HEIGHT, 0));
-		for (float x = originTop.x; cam.frustum.pointInFrustum(x, originTop.y, 0); x += factor) {
-			sR.rectLine(x - x % factor, originTop.y, x - x % factor, originTop.y + (HEIGHT * cam.zoom),
-					factor - factor / 10);
-		}
-		for (float x = originTop.x - factor; cam.frustum.pointInFrustum(x, originTop.y, 0); x -= factor) {
-			sR.rectLine(x - x % factor, originTop.y, x - x % factor, originTop.y + (HEIGHT * cam.zoom),
-					factor - factor / 10);
-		}
-		
 		// Draw particles
+		sR.setProjectionMatrix(viewport.getCamera().combined);
 		for (Particle p : eR.getP()) {
 			sR.setColor(1, 1, 1, 1);
 			sR.circle(p.pos.x, p.pos.y, p.r);
