@@ -196,13 +196,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		cam.update();
 		return true;
 	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		lastPos.set(Gdx.input.getX(), Gdx.input.getY());
-		return true;
-	}
-
+	
 	@Override
 	public boolean keyUp(int keycode) {
 		return false;
