@@ -45,7 +45,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		checkForInput();
 		eR.moveParticles(Gdx.graphics.getDeltaTime());
 		cam.update();
-
+		
 		sR.begin();
 		sR.setProjectionMatrix(viewport.getCamera().combined);
 		sR.set(ShapeType.Filled);

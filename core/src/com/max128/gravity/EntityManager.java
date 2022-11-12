@@ -14,10 +14,9 @@ public class EntityManager {
 	public EntityManager() {
 		running = true;
 		p = new Array<Particle>();
-		p.add(new Particle(0, 0, 26.0f, 0, 1E15f, 10));
-		p.add(new Particle(0, 100, -13f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1000, 13f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1100, -26f, 0, 1E15f, 10));
+		p.add(new Particle(0, 6.371E6f + 400000, 7660, 0, 440000, 55000)); //ISS
+		p.add(new Particle(0, 0, 0, 0, 5.972E24f, 6.371E6f)); //Earth
+		p.add(new Particle(0, 384403000, 1023, 0, 7.3483E22f, 1738000)); //Moon
 	}
 
 	public void moveParticles(float dt) {
@@ -30,7 +29,6 @@ public class EntityManager {
 				}
 			}
 		}
-		System.out.println((speed * dt) / STEPS);
 	}
 
 	private void calcGravity(float dt) {
