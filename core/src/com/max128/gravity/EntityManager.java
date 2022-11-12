@@ -13,10 +13,9 @@ public class EntityManager {
 
 	public EntityManager() {
 		p = new Array<Particle>();
-		p.add(new Particle(0, 0, 2.0f, 0, 1E15f, 10));
-		p.add(new Particle(0, 100, -1f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1000, 1f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1100, -2f, 0, 1E15f, 10));
+		p.add(new Particle(0, 6.371E6f + 400000, 7660, 0, 440000, 55000)); //ISS
+		p.add(new Particle(0, 0, 0, 0, 5.972E24f, 6.371E6f)); //Earth
+		p.add(new Particle(0, 384403000, 1023, 0, 7.3483E22f, 1738000)); //Moon
 	}
 
 	public void moveParticles(float dt) {
@@ -25,7 +24,7 @@ public class EntityManager {
 				calcGravity((dt * speed) / STEPS);
 				for (Particle p : p) {
 					resolveCollision(p);
-					p.pos.add(p.vel.cpy().scl(speed / STEPS));
+					p.pos.add(p.vel.cpy().scl((speed * dt) / STEPS));
 				}
 			}
 		}

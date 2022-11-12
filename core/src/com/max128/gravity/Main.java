@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FillViewport;
@@ -22,7 +23,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private float zoomTarget;
 
-	private Vector2 lastPos;
 	private Viewport viewport;
 	private Viewport gridViewport;
 	private Viewport gridViewport2;
@@ -35,7 +35,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void create() {
 		zoomTarget = 1f;
-		lastPos = new Vector2();
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam2 = new OrthographicCamera(WIDTH, HEIGHT);
@@ -61,7 +60,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		zoomToTarget();
 		checkForInput();
 		eR.moveParticles(Gdx.graphics.getDeltaTime());
-
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
@@ -178,6 +176,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			cam.zoom = 1f;
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		return false;
 	}
 
 	@Override
