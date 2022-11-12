@@ -41,7 +41,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		gridCam2 = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
 		gridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
-		gridViewport2 = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam2);		
+		gridViewport2 = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam2);
 		eR = new EntityManager();
 		sR = new ShapeRenderer();
 		sR.setAutoShapeType(true);
@@ -69,12 +69,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
-		// Draw grid
+		// Draw first grid
 		sR.setProjectionMatrix(gridViewport.getCamera().combined);
 		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 1.5))));
 		gridCam.zoom = (float) ((cam.zoom) / factor);
-
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((-2.2222 * gridCam.zoom) + 1.11111111));
+		
 		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
@@ -83,13 +83,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
-		
+
+		// Draw the second grid which is bigger
 		sR.setProjectionMatrix(gridViewport2.getCamera().combined);
 		factor *= 10;
 		gridCam2.zoom = gridCam.zoom / 10;
-
-		//Draw the grid which is futher
-		sR.setColor(0.2f, 0.2f, 0.2f,(float) ((22.222 * gridCam2.zoom) - 0.11111111));
+		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((2.222 * gridCam.zoom) - 0.11111111));
+		
 		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam2.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
@@ -98,6 +98,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
+		
 		gridCam.update();
 		gridCam2.update();
 
@@ -112,7 +113,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		super.render();
 	}
-	
+
 	private void drawVerticalPoints(float x, double factor) {
 		for (float y = (float) ((-cam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
 				0); y += 10) {
@@ -138,10 +139,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			cam.position.x -= 20f * cam.zoom;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-			zoomTarget += zoomTarget * 0.1f * 0.3f;
+			zoomTarget += zoomTarget * 0.03f;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-			zoomTarget += zoomTarget * -0.1f * 0.3f;
+			zoomTarget += zoomTarget  * -0.03f;
 		}
 	}
 
@@ -151,26 +152,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		} else if (cam.zoom != zoomTarget) {
 			cam.zoom = zoomTarget;
 		}
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		cam.position.add(Gdx.input.getDeltaX() * -cam.zoom, Gdx.input.getDeltaY() * cam.zoom, 0);
-		cam.update();
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(float amountX, float amountY) {
-		zoomTarget += zoomTarget * amountY * 0.3f;
-		cam.update();
-		return true;
-	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		lastPos.set(Gdx.input.getX(), Gdx.input.getY());
-		return true;
 	}
 
 	@Override
@@ -197,6 +178,26 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			zoomTarget = 1f;
 			cam.zoom = 1f;
 		}
+		return true;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		cam.position.add(Gdx.input.getDeltaX() * -cam.zoom, Gdx.input.getDeltaY() * cam.zoom, 0);
+		cam.update();
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(float amountX, float amountY) {
+		zoomTarget += zoomTarget * amountY * 0.3f;
+		cam.update();
+		return true;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		lastPos.set(Gdx.input.getX(), Gdx.input.getY());
 		return true;
 	}
 
