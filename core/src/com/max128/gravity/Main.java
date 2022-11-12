@@ -61,7 +61,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		zoomToTarget();
 		checkForInput();
 		eR.moveParticles(Gdx.graphics.getDeltaTime());
-		cam.update();
 
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -71,10 +70,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		// Draw first grid
 		sR.setProjectionMatrix(gridViewport.getCamera().combined);
-		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 1.5))));
+		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom))));
 		gridCam.zoom = (float) ((cam.zoom) / factor);
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((-2.2222 * gridCam.zoom) + 1.11111111));
-		
+
 		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
@@ -89,7 +88,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		factor *= 10;
 		gridCam2.zoom = gridCam.zoom / 10;
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((2.222 * gridCam.zoom) - 0.11111111));
-		
+
 		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam2.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
@@ -98,9 +97,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
-		
-		gridCam.update();
-		gridCam2.update();
 
 		// Draw particles
 		sR.setProjectionMatrix(viewport.getCamera().combined);
@@ -109,6 +105,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			sR.circle(p.pos.x, p.pos.y, p.r);
 		}
 
+		cam.update();
+		gridCam.update();
+		gridCam2.update();
 		sR.end();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		super.render();
@@ -142,7 +141,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			zoomTarget += zoomTarget * 0.03f;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-			zoomTarget += zoomTarget  * -0.03f;
+			zoomTarget += zoomTarget * -0.03f;
 		}
 	}
 
