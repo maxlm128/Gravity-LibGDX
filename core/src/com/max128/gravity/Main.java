@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -24,8 +25,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private Vector2 lastPos;
 	private Viewport viewport;
 	private Viewport gridViewport;
+	private Viewport gridViewport2;
 	private OrthographicCamera cam;
 	private OrthographicCamera gridCam;
+	private OrthographicCamera gridCam2;
 	private ShapeRenderer sR;
 	private EntityManager eR;
 
@@ -35,8 +38,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		lastPos = new Vector2();
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam = new OrthographicCamera(WIDTH, HEIGHT);
+		gridCam2 = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
 		gridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
+		gridViewport2 = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam2);		
 		eR = new EntityManager();
 		sR = new ShapeRenderer();
 		sR.setAutoShapeType(true);
@@ -48,6 +53,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public void resize(int width, int height) {
 		viewport.update(width, height);
 		gridViewport.update(width, height);
+		gridViewport2.update(width, height);
 	}
 
 	@Override
@@ -57,34 +63,43 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		eR.moveParticles(Gdx.graphics.getDeltaTime());
 		cam.update();
 
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
-		sR.setProjectionMatrix(gridViewport.getCamera().combined);
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Draw grid
-		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 3))));
+		sR.setProjectionMatrix(gridViewport.getCamera().combined);
+		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom * 1.5))));
 		gridCam.zoom = (float) ((cam.zoom) / factor);
 
-		sR.setColor(0.2f, 0.2f, 0.2f, 1f);
+		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((-2.2222 * gridCam.zoom) + 1.11111111));
 		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
-			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
+			drawVerticalPoints(x, factor);
 		}
 		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam.frustum.pointInFrustum(x + 4.5f, 0,
 				0); x -= 10) {
-			sR.rectLine(x, -HEIGHT / 2, x, HEIGHT / 2, 9);
+			drawVerticalPoints(x, factor);
 		}
+		
+		sR.setProjectionMatrix(gridViewport2.getCamera().combined);
+		factor *= 10;
+		gridCam2.zoom = gridCam.zoom / 10;
 
-		for (float y = (float) ((-cam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
-				0); y += 10) {
-			sR.rectLine(-WIDTH / 2, y, WIDTH / 2, y, 9);
+		//Draw the grid which is futher
+		sR.setColor(0.2f, 0.2f, 0.2f,(float) ((22.222 * gridCam2.zoom) - 0.11111111));
+		for (float x = (float) ((-cam.position.x / factor) % 10); gridCam2.frustum.pointInFrustum(x - 4.5f, 0,
+				0); x += 10) {
+			drawVerticalPoints(x, factor);
 		}
-		for (float y = (float) ((-cam.position.y / factor) % 10) - 10; gridCam.frustum.pointInFrustum(0, y + 4.5f,
-				0); y -= 10) {
-			sR.rectLine(-WIDTH / 2, y, WIDTH / 2, y, 9);
+		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam2.frustum.pointInFrustum(x + 4.5f, 0,
+				0); x -= 10) {
+			drawVerticalPoints(x, factor);
 		}
 		gridCam.update();
+		gridCam2.update();
 
 		// Draw particles
 		sR.setProjectionMatrix(viewport.getCamera().combined);
@@ -94,7 +109,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 
 		sR.end();
+		Gdx.gl.glDisable(GL20.GL_BLEND);
 		super.render();
+	}
+	
+	private void drawVerticalPoints(float x, double factor) {
+		for (float y = (float) ((-cam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
+				0); y += 10) {
+			sR.rectLine(x - 0.5f, y, x + 0.5f, y, 1);
+		}
+		for (float y = (float) ((-cam.position.y / factor) % 10) - 10; gridCam.frustum.pointInFrustum(0, y + 4.5f,
+				0); y -= 10) {
+			sR.rectLine(x - 0.5f, y, x + 0.5f, y, 1);
+		}
 	}
 
 	private void checkForInput() {
