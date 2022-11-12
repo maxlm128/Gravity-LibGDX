@@ -7,7 +7,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -19,7 +18,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private float zoomTarget;
 
-	private Vector2 lastPos;
 	private Viewport viewport;
 	private OrthographicCamera cam;
 	private ShapeRenderer sR;
@@ -28,7 +26,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void create() {
 		zoomTarget = 1f;
-		lastPos = new Vector2();
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
 		eR = new EntityManager();
@@ -110,12 +107,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		lastPos.set(Gdx.input.getX(), Gdx.input.getY());
-		return true;
-	}
-
-	@Override
 	public boolean keyDown(int keycode) {
 		switch (keycode) {
 		case Input.Keys.SPACE:
@@ -140,6 +131,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			cam.zoom = 1f;
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		return false;
 	}
 
 	@Override

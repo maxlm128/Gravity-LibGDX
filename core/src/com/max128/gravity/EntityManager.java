@@ -14,10 +14,10 @@ public class EntityManager {
 	public EntityManager() {
 		running = true;
 		p = new Array<Particle>();
-		p.add(new Particle(0, 0, 2.0f, 0, 1E15f, 10));
-		p.add(new Particle(0, 100, -1f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1000, 1f, 0, 1E15f, 10));
-		p.add(new Particle(0, 1100, -2f, 0, 1E15f, 10));
+		p.add(new Particle(0, 0, 26.0f, 0, 1E15f, 10));
+		p.add(new Particle(0, 100, -13f, 0, 1E15f, 10));
+		p.add(new Particle(0, 1000, 13f, 0, 1E15f, 10));
+		p.add(new Particle(0, 1100, -26f, 0, 1E15f, 10));
 	}
 
 	public void moveParticles(float dt) {
@@ -26,10 +26,11 @@ public class EntityManager {
 				calcGravity((dt * speed) / STEPS);
 				for (Particle p : p) {
 					resolveCollision(p);
-					p.pos.add(p.vel.cpy().scl(speed / STEPS));
+					p.pos.add(p.vel.cpy().scl((speed * dt) / STEPS));
 				}
 			}
 		}
+		System.out.println((speed * dt) / STEPS);
 	}
 
 	private void calcGravity(float dt) {
