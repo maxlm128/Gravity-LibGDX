@@ -94,18 +94,18 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			drawVerticalPoints(x, factor);
 		}
 		
-		if(camFixedTo != null) {
-			cam.position.x = camFixedTo.pos.x;
-			cam.position.y = camFixedTo.pos.y;
-		}
-
 		// Draw particles
 		sR.setProjectionMatrix(viewport.getCamera().combined);
 		for (Particle p : eR.getP()) {
 			sR.setColor(1, 1, 1, 1);
 			sR.circle(p.pos.x, p.pos.y, p.r);
 		}
-
+		//Update position to fixed Particle
+		if(camFixedTo != null) {
+			cam.position.x = camFixedTo.pos.x;
+			cam.position.y = camFixedTo.pos.y;
+		}
+		
 		cam.update();
 		gridCam.update();
 		gridCam2.update();
@@ -127,15 +127,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private void checkForInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+			camFixedTo = null;
 			cam.position.y += 20f * cam.zoom;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+			camFixedTo = null;
 			cam.position.y -= 20f * cam.zoom;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+			camFixedTo = null;
 			cam.position.x += 20f * cam.zoom;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+			camFixedTo = null;
 			cam.position.x -= 20f * cam.zoom;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
