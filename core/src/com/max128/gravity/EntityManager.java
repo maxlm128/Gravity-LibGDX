@@ -1,6 +1,7 @@
 package com.max128.gravity;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class EntityManager {
@@ -13,9 +14,9 @@ public class EntityManager {
 
 	public EntityManager() {
 		p = new Array<Particle>();
-		p.add(new Particle(0, 6.371E6f + 400000, 7660, 0, 440000, 55000)); //ISS
-		p.add(new Particle(0, 0, 0, 0, 5.972E24f, 6.371E6f)); //Earth
-		p.add(new Particle(0, 384403000, 1023, 0, 7.3483E22f, 1738000)); //Moon
+		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660, 0, 440000, 55000)); //ISS
+		p.add(new Particle(1E7f, 0, 0, 0, 5.972E24f, 6.371E6f)); //Earth
+		p.add(new Particle(1E7f, 384403000, 1023, 0, 7.3483E22f, 1738000)); //Moon
 	}
 
 	public void moveParticles(float dt) {
@@ -28,6 +29,15 @@ public class EntityManager {
 				}
 			}
 		}
+	}
+	
+	public Particle posInParticle(Vector3 pos) {
+		for(Particle p: p) {
+			if(p.pos.dst(pos.x, pos.y) <= p.r) {
+				return p;
+			}
+		}
+		return null;
 	}
 
 	private void calcGravity(float dt) {

@@ -8,12 +8,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class Main extends ApplicationAdapter implements InputProcessor {
@@ -22,6 +19,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	final static int HEIGHT = 1080;
 
 	private float zoomTarget;
+	private Particle camFixedTo;
 
 	private Viewport viewport;
 	private Viewport gridViewport;
@@ -68,7 +66,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		// Draw first grid
 		sR.setProjectionMatrix(gridViewport.getCamera().combined);
-		double factor = (double) (Math.pow(10, Math.ceil(Math.log10(cam.zoom))));
+		double factor = Math.pow(10, Math.ceil(Math.log10(cam.zoom)));
 		gridCam.zoom = (float) ((cam.zoom) / factor);
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((-2.2222 * gridCam.zoom) + 1.11111111));
 
@@ -94,6 +92,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		for (float x = (float) ((-cam.position.x / factor) % 10) - 10; gridCam2.frustum.pointInFrustum(x + 4.5f, 0,
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
+		}
+		
+		if(camFixedTo != null) {
+			cam.position.x = camFixedTo.pos.x;
+			cam.position.y = camFixedTo.pos.y;
 		}
 
 		// Draw particles
@@ -177,14 +180,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		camFixedTo = eR.posInParticle(cam.unproject(new Vector3(screenX, screenY, 0)));
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		camFixedTo = null;
 		cam.position.add(Gdx.input.getDeltaX() * -cam.zoom, Gdx.input.getDeltaY() * cam.zoom, 0);
 		cam.update();
 		return false;
@@ -196,7 +201,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		cam.update();
 		return true;
 	}
-	
+
 	@Override
 	public boolean keyUp(int keycode) {
 		return false;
