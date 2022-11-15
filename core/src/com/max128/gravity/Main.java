@@ -106,12 +106,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		// Draw particles
 		sR.setColor(1, 1, 1, 1);
 		for (Particle p : eM.getP()) {
-			if (p.r / cam.zoom >= 2) {
+			if (p.r / cam.zoom >= 1) {
 				sR.setProjectionMatrix(viewport.getCamera().combined);
 				sR.circle(p.pos.x, p.pos.y, p.r, 100);
 			} else {
 				sR.setProjectionMatrix(staticViewport.getCamera().combined);
-				sR.circle((-cam.position.x + p.pos.x) / cam.zoom, (-cam.position.y + p.pos.y) / cam.zoom, 2, 3);
+				sR.circle((-cam.position.x + p.pos.x) / cam.zoom, (-cam.position.y + p.pos.y) / cam.zoom, 1, 10);
 			}
 		}
 
