@@ -6,17 +6,18 @@ import com.badlogic.gdx.utils.Array;
 
 public class EntityManager {
 
-	final static int STEPS = 100; //calculation steps per move
-	float speed = 1; //ingame-seconds per real seconds
+	final static int STEPS = 100; // calculation steps per move
+	float speed = 1; // ingame-seconds per real seconds
 	Array<Particle> p;
 	final protected float G = 6.6743E-11f;
 	boolean running;
 
 	public EntityManager() {
 		p = new Array<Particle>();
-		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660, 0, 440000, 55000)); //ISS
-		p.add(new Particle(1E7f, 0, 0, 0, 5.972E24f, 6.371E6f)); //Earth
-		p.add(new Particle(1E7f, 384403000, 1023, 0, 7.3483E22f, 1738000)); //Moon
+		p.add(new Particle(1E7f, 0, 29780f, 0, 5.972E24f, 6.371E6f)); // Earth
+		p.add(new Particle(1E7f, 149600000000f, 0, 0, 1.9884E30f, 696340000f)); // Sun
+		p.add(new Particle(1E7f, 384403000, 1023 + 29780f, 0, 7.3483E22f, 1738000)); // Moon
+		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660 + 29780f, 0, 440000, 55)); // ISS
 	}
 
 	public void moveParticles(float dt) {
@@ -30,10 +31,10 @@ public class EntityManager {
 			}
 		}
 	}
-	
+
 	public Particle posInParticle(Vector3 pos) {
-		for(Particle p: p) {
-			if(p.pos.dst(pos.x, pos.y) <= p.r) {
+		for (Particle p : p) {
+			if (p.pos.dst(pos.x, pos.y) <= p.r) {
 				return p;
 			}
 		}

@@ -24,25 +24,33 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private Viewport viewport;
 	private Viewport gridViewport;
 	private Viewport gridViewport2;
+	private Viewport staticViewport;
 	private OrthographicCamera cam;
 	private OrthographicCamera gridCam;
 	private OrthographicCamera gridCam2;
+	private OrthographicCamera staticCam;
 	private ShapeRenderer sR;
-	private EntityManager eR;
+	private EntityManager eM;
 
 	@Override
 	public void create() {
-		zoomTarget = 1f;
 		cam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		gridCam2 = new OrthographicCamera(WIDTH, HEIGHT);
+		staticCam = new OrthographicCamera(WIDTH, HEIGHT);
 		viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
 		gridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam);
 		gridViewport2 = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gridCam2);
-		eR = new EntityManager();
+		staticViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), staticCam);
+		eM = new EntityManager();
 		sR = new ShapeRenderer();
 		sR.setAutoShapeType(true);
 		Gdx.input.setInputProcessor(this);
+		if (eM.getP().size > 0) {
+			camFixedTo = eM.getP().get(0);
+			cam.zoom = camFixedTo.r / 100;
+		}
+		zoomTarget = cam.zoom;
 		super.create();
 	}
 
@@ -51,13 +59,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		viewport.update(width, height);
 		gridViewport.update(width, height);
 		gridViewport2.update(width, height);
+		staticViewport.update(width, height);
 	}
 
 	@Override
 	public void render() {
 		zoomToTarget();
 		checkForInput();
-		eR.moveParticles(Gdx.graphics.getDeltaTime());
+		eM.moveParticles(Gdx.graphics.getDeltaTime());
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
@@ -93,19 +102,25 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
-		
+
 		// Draw particles
-		sR.setProjectionMatrix(viewport.getCamera().combined);
-		for (Particle p : eR.getP()) {
-			sR.setColor(1, 1, 1, 1);
-			sR.circle(p.pos.x, p.pos.y, p.r);
+		sR.setColor(1, 1, 1, 1);
+		for (Particle p : eM.getP()) {
+			if (p.r / cam.zoom >= 2) {
+				sR.setProjectionMatrix(viewport.getCamera().combined);
+				sR.circle(p.pos.x, p.pos.y, p.r, 100);
+			} else {
+				sR.setProjectionMatrix(staticViewport.getCamera().combined);
+				sR.circle((-cam.position.x + p.pos.x) / cam.zoom, (-cam.position.y + p.pos.y) / cam.zoom, 2, 3);
+			}
 		}
-		//Update position to fixed Particle
-		if(camFixedTo != null) {
+
+		// Update position to fixed Particle
+		if (camFixedTo != null) {
 			cam.position.x = camFixedTo.pos.x;
 			cam.position.y = camFixedTo.pos.y;
 		}
-		
+
 		cam.update();
 		gridCam.update();
 		gridCam2.update();
@@ -162,7 +177,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public boolean keyDown(int keycode) {
 		switch (keycode) {
 		case Input.Keys.SPACE:
-			eR.running = !eR.running;
+			eM.running = !eM.running;
 			break;
 		case Input.Keys.F11:
 			if (!Gdx.graphics.isFullscreen()) {
@@ -172,10 +187,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			}
 			break;
 		case Input.Keys.UP:
-			eR.speed *= 2;
+			eM.speed *= 2;
 			break;
 		case Input.Keys.DOWN:
-			eR.speed *= 0.5f;
+			eM.speed *= 0.5f;
 			break;
 		case Input.Keys.R:
 			cam.position.setZero();
@@ -187,7 +202,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		camFixedTo = eR.posInParticle(cam.unproject(new Vector3(screenX, screenY, 0)));
+		camFixedTo = eM.posInParticle(cam.unproject(new Vector3(screenX, screenY, 0)));
 		return false;
 	}
 
