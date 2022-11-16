@@ -14,10 +14,10 @@ public class EntityManager {
 
 	public EntityManager() {
 		p = new Array<Particle>();
-		p.add(new Particle(1E7f, 0, 29780f, 0, 5.972E24f, 6.371E6f)); // Earth
-		p.add(new Particle(1E7f, 149600000000f, 0, 0, 1.9884E30f, 696340000f)); // Sun
-		p.add(new Particle(1E7f, 384403000, 1023 + 29780f, 0, 7.3483E22f, 1738000)); // Moon
-		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660 + 29780f, 0, 440000, 55)); // ISS
+		p.add(new Particle(1E7f, 0, 29780f, 0, 5.972E24f, 6.371E6f, Textures.EARTH)); // Earth
+		p.add(new Particle(1E7f, 149600000000f, 0, 0, 1.9884E30f, 696340000f, Textures.SUN)); // Sun
+		p.add(new Particle(1E7f, 384403000, 1023 + 29780f, 0, 7.3483E22f, 1738000, Textures.MOON)); // Moon
+		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660 + 29780f, 0, 440000, 55, Textures.ISS)); // ISS
 	}
 
 	public void moveParticles(float dt) {
