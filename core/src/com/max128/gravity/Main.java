@@ -98,13 +98,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
-
+		
 		// Draw the second grid which is bigger
 		sR.setProjectionMatrix(gridCam2.combined);
 		factor *= 10;
 		gridCam2.zoom = gridCam.zoom / 10;
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((2.222 * gridCam.zoom) - 0.11111111));
-
 		for (float x = (float) ((-mainCam.position.x / factor) % 10); gridCam2.frustum.pointInFrustum(x - 4.5f, 0,
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
@@ -114,19 +113,29 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			drawVerticalPoints(x, factor);
 		}
 
-		// Draw particles
-		sR.setColor(1, 1, 1, 1);
+		// Draw far particles with ShapeRenderer
+		sR.setColor(1f, 1f, 1f, 1f);
+		sR.setProjectionMatrix(staticCam.combined);
 		for (Particle p : eM.getP()) {
-			if (p.r / mainCam.zoom >= 1) {
-				batch.setProjectionMatrix(mainCam.combined);
-				batch.begin();
-				batch.draw(p.tex, p.pos.x - p.r, p.pos.y - p.r, p.r * 2, p.r * 2);
-				batch.end();
-			} else {
-				sR.setProjectionMatrix(staticCam.combined);
-				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom, (-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
+			if (p.r / mainCam.zoom < 1) {
+				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom,
+						(-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
 			}
 		}
+		sR.end();
+		Gdx.gl.glDisable(GL20.GL_BLEND);
+		
+		
+		//Draw near particles with Textures
+		sR.setColor(1, 1, 1, 1);
+		batch.setProjectionMatrix(mainCam.combined);
+		batch.begin();
+		for (Particle p : eM.getP()) {
+			if (p.r / mainCam.zoom >= 1) {
+				batch.draw(p.tex, p.pos.x - p.r, p.pos.y - p.r, p.r * 2, p.r * 2);
+			}
+		}
+		batch.end();
 
 		// Update position to fixed Particle
 		if (camFixedTo != null) {
@@ -137,8 +146,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		mainCam.update();
 		gridCam.update();
 		gridCam2.update();
-		sR.end();
-		Gdx.gl.glDisable(GL20.GL_BLEND);
 		super.render();
 	}
 
