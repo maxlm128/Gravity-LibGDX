@@ -3,7 +3,7 @@ package com.max128.gravity;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-
+/** Manages the Entitys, including the Particles  **/
 public class EntityManager {
 
 	final static int STEPS = 100; // calculation steps per move
@@ -20,6 +20,7 @@ public class EntityManager {
 		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660 + 29780f, 0, 440000, 55, Textures.ISS)); // ISS
 	}
 
+	/** moves every particle by calling the calcGravity method and applying the velocity to the position **/
 	public void moveParticles(float dt) {
 		if (running) {
 			for (int i = 0; i < STEPS; i++) {
@@ -32,6 +33,8 @@ public class EntityManager {
 		}
 	}
 
+	/** checks if a position is inside a circle of a particle in the particle
+	array-list **/
 	public Particle posInParticle(Vector3 pos) {
 		for (Particle p : p) {
 			if (p.pos.dst(pos.x, pos.y) <= p.r) {
@@ -41,6 +44,8 @@ public class EntityManager {
 		return null;
 	}
 
+	/** calculates the gravity from each particle to each other particle and applies
+	it to both particles. A calculation between two particles happens only once **/
 	private void calcGravity(float dt) {
 		for (int i = 0; i < p.size; i++) {
 			for (int j = i + 1; j < p.size; j++) {
@@ -53,10 +58,13 @@ public class EntityManager {
 		}
 	}
 
+	//TODO:
+	/** resolves the collision between two particles **/
 	private void resolveCollision(Particle p) {
 
 	}
 
+	/** returns the LibGDX array-list of all particles **/
 	public Array<Particle> getP() {
 		return this.p;
 	}

@@ -6,8 +6,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -16,6 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+/** Main class and Renderer of the Game **/
 public class Main extends ApplicationAdapter implements InputProcessor {
 
 	final static int WIDTH = 1920;
@@ -75,15 +74,39 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
+		//Calculations
 		zoomToTarget();
 		checkForInput();
 		eM.moveParticles(Gdx.graphics.getDeltaTime());
+		
+		//rendering preperation
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
+		//rendering with Shaperenderer
+		drawGrids();
+		drawFarParticles();
+		drawNearParticles();
+		
+		//rendering with SpriteBatch
+		updateToFixedPos();
+
+		//rendering postprocessing
+		sR.end();
+		Gdx.gl.glDisable(GL20.GL_BLEND);
+
+		//Updating Cameras
+		mainCam.update();
+		gridCam.update();
+		gridCam2.update();
+		super.render();
+	}
+
+	/** draws the far and the near grid depending on the zoom**/
+	public void drawGrids() {
 		// Draw first grid
 		sR.setProjectionMatrix(gridCam.combined);
 		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
@@ -98,7 +121,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
-		
+
 		// Draw the second grid which is bigger
 		sR.setProjectionMatrix(gridCam2.combined);
 		factor *= 10;
@@ -113,20 +136,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			drawVerticalPoints(x, factor);
 		}
 
-		// Draw far particles with ShapeRenderer
-		sR.setColor(1f, 1f, 1f, 1f);
-		sR.setProjectionMatrix(staticCam.combined);
-		for (Particle p : eM.getP()) {
-			if (p.r / mainCam.zoom < 1) {
-				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom,
-						(-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
-			}
-		}
-		sR.end();
-		Gdx.gl.glDisable(GL20.GL_BLEND);
-		
-		
-		//Draw near particles with Textures
+	}
+
+	/** Draw near particles with Textures **/
+	public void drawNearParticles() {
 		sR.setColor(1, 1, 1, 1);
 		batch.setProjectionMatrix(mainCam.combined);
 		batch.begin();
@@ -136,19 +149,34 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 		batch.end();
+	}
 
-		// Update position to fixed Particle
+	/** Draw far particles with ShapeRenderer **/
+	public void drawFarParticles() {
+		sR.setColor(1f, 1f, 1f, 1f);
+		sR.setProjectionMatrix(staticCam.combined);
+		for (Particle p : eM.getP()) {
+			if (p.r / mainCam.zoom < 1) {
+				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom,
+						(-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
+			}
+		}
+	}
+
+	/** Update position to fixed Particle **/
+	public void updateToFixedPos() {
 		if (camFixedTo != null) {
 			mainCam.position.x = camFixedTo.pos.x;
 			mainCam.position.y = camFixedTo.pos.y;
 		}
-
-		mainCam.update();
-		gridCam.update();
-		gridCam2.update();
-		super.render();
 	}
 
+	/**
+	 * Draws a line of points on the screen with a distance dependent from the
+	 * camera-zoom and beginning always at the same ingame position
+	 * @param x ,Position where drawing of the points in y direction should begin
+	 * @param factor ,the next power of ten of the zoom for calculating the beginning y position
+	 **/
 	private void drawVerticalPoints(float x, double factor) {
 		for (float y = (float) ((-mainCam.position.y / factor) % 10); gridCam.frustum.pointInFrustum(0, y - 4.5f,
 				0); y += 10) {
@@ -160,6 +188,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	/** checks for inputs from the keyboard and reacts **/
 	private void checkForInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			camFixedTo = null;
@@ -185,6 +214,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	/** approaches the zoomTarget with every execution **/
 	private void zoomToTarget() {
 		if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
 			mainCam.zoom = zoomTarget - ((zoomTarget - mainCam.zoom) * 0.95f);
