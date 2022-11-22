@@ -79,24 +79,34 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		checkForInput();
 		eM.moveParticles(Gdx.graphics.getDeltaTime());
 		
-		//rendering preperation
+		//ShapeRenderer rendering preperation
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
-		//rendering with Shaperenderer
+		//Rendering with Shaperenderer
 		drawGrids();
 		drawFarParticles();
 		drawNearParticles();
 		
-		//rendering with SpriteBatch
-		updateToFixedPos();
-
-		//rendering postprocessing
+		//ShapeRenderer rendering postprocessing
 		sR.end();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
+		
+		//SpriteBatch rendering preperation
+		batch.setProjectionMatrix(mainCam.combined);
+		batch.begin();
+	
+		//Rendering with spriteBatch
+		drawNearParticles();
+		
+		//SpriteBatch rendering postprocessing
+		batch.end();
+		
+		//Update camera position to fixed position
+		updateToFixedPos();
 
 		//Updating Cameras
 		mainCam.update();
@@ -141,14 +151,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	/** Draw near particles with Textures **/
 	public void drawNearParticles() {
 		sR.setColor(1, 1, 1, 1);
-		batch.setProjectionMatrix(mainCam.combined);
-		batch.begin();
 		for (Particle p : eM.getP()) {
 			if (p.r / mainCam.zoom >= 1) {
 				batch.draw(p.tex, p.pos.x - p.r, p.pos.y - p.r, p.r * 2, p.r * 2);
 			}
 		}
-		batch.end();
 	}
 
 	/** Draw far particles with ShapeRenderer **/
@@ -188,7 +195,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
-	/** checks for inputs from the keyboard and reacts **/
+	/** Checks for inputs from the keyboard and reacts **/
 	private void checkForInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			camFixedTo = null;
@@ -214,7 +221,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
-	/** approaches the zoomTarget with every execution **/
+	/** Approaches the camera-zoom to the zoomTarget with every execution **/
 	private void zoomToTarget() {
 		if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
 			mainCam.zoom = zoomTarget - ((zoomTarget - mainCam.zoom) * 0.95f);

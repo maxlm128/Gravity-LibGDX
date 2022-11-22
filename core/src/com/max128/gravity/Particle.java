@@ -4,10 +4,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
 public class Particle {
-	Vector2 pos; // Position in meters
-	Vector2 vel; // Velocity in m/s
-	float r; // Radius in meters
-	float m; // Mass in kg
+	Vector2 pos; // position in meters
+	Vector2 vel; // velocity in m/s
+	float r; // radius in meters
+	float m; // mass in kg
 	Texture tex;
 	
 

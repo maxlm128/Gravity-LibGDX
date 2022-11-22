@@ -9,7 +9,7 @@ public class Textures {
 	public static Texture ISS;
 	public static Texture MOON;
 
-	/** loads the textures from local files into the graphics-card memory and stores
+	/** Loads the textures from local files into the graphics-card memory and stores
 	them into variables **/
 	public static void loadTextures() {
 		SUN = new Texture("sun.png");
@@ -18,7 +18,7 @@ public class Textures {
 		MOON = new Texture("moon.png");
 	}
 
-	/** disposes the textures **/
+	/** Disposes the textures **/
 	public static void disposeTextures() {
 		SUN.dispose();
 		EARTH.dispose();
