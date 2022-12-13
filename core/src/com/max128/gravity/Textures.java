@@ -8,6 +8,7 @@ public class Textures {
 	public static Texture EARTH;
 	public static Texture ISS;
 	public static Texture MOON;
+	public static Texture BOX;
 
 	/** Loads the textures from local files into the graphics-card memory and stores
 	them into variables **/
@@ -16,6 +17,7 @@ public class Textures {
 		EARTH = new Texture("earth.png");
 		ISS = new Texture("iss.png");
 		MOON = new Texture("moon.png");
+		BOX = new Texture("box.png");
 	}
 
 	/** Disposes the textures **/
@@ -24,5 +26,6 @@ public class Textures {
 		EARTH.dispose();
 		ISS.dispose();
 		MOON.dispose();
+		BOX.dispose();
 	}
 }
