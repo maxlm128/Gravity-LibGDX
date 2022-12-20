@@ -4,9 +4,13 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
@@ -27,12 +31,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private Viewport farGridViewport;
 	private Viewport nearGridViewport;
 	private Viewport staticViewport;
-	
+
 	private OrthographicCamera mainCam;
 	private OrthographicCamera farGridCam;
 	private OrthographicCamera nearGridCam;
 	private OrthographicCamera staticCam;
-	
+
+	BitmapFont font;
+
 	private ShapeRenderer sR;
 	private SpriteBatch batch;
 	private EntityManager eM;
@@ -51,6 +57,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		eM = new EntityManager();
 		sR = new ShapeRenderer();
 		batch = new SpriteBatch();
+		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+		parameter.size = 18;
+		parameter.borderWidth = 2f;
+		parameter.shadowOffsetX = 2;
+		parameter.shadowOffsetY = 2;
+		font = new FreeTypeFontGenerator(Gdx.files.internal("consolas.ttf")).generateFont(parameter);
 		sR.setAutoShapeType(true);
 		Gdx.input.setInputProcessor(this);
 		if (eM.getP().size > 0) {
@@ -76,54 +88,78 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
-		//Calculations
+		// Calculations
 		zoomToTarget(Gdx.graphics.getDeltaTime());
 		checkForInput();
 		eM.moveParticles(Gdx.graphics.getDeltaTime());
-		
-		//ShapeRenderer rendering preperation
+
+		// ShapeRenderer rendering preperation
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		sR.begin();
 		sR.set(ShapeType.Filled);
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
-		//Rendering with Shaperenderer
+		// Rendering with Shaperenderer
 		drawGrids();
 		drawFarParticles();
-		
-		//ShapeRenderer rendering postprocessing
+
+		// ShapeRenderer rendering postprocessing
 		sR.end();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
-		
-		//SpriteBatch rendering preperation
+
+		// SpriteBatch rendering preperation
 		batch.setProjectionMatrix(mainCam.combined);
 		batch.begin();
-	
-		//Rendering with spriteBatch
+
+		// Rendering with spriteBatch
 		drawNearParticles();
 		drawGUI();
-		
-		//SpriteBatch rendering postprocessing
+
+		// SpriteBatch rendering postprocessing
 		batch.end();
-		
-		//Update camera position to fixed position
+
+		// Update camera position to fixed position
 		updateToFixedPos();
 
-		//Updating Cameras
+		// Updating Cameras
 		mainCam.update();
 		farGridCam.update();
 		nearGridCam.update();
 		super.render();
 	}
-	
+
+	/** Draws the graphical user interface for interaction with Particles **/
 	private void drawGUI() {
-		System.out.println("lol");
-		batch.setProjectionMatrix(staticCam.combined);
-		batch.draw(Textures.BOX, -staticViewport.getWorldWidth() / 2, -staticViewport.getWorldHeight() / 2);
+		// Particle GUI
+		if (camFixedTo != null) {
+			batch.setProjectionMatrix(staticCam.combined);
+			batch.draw(Textures.BOX, -staticViewport.getWorldWidth() / 2, -staticViewport.getWorldHeight() / 2);
+			batch.draw(camFixedTo.tex, (-staticViewport.getWorldWidth() / 2) + 30,
+					(-staticViewport.getWorldHeight() / 2) + 80, 200, 200);
+			font.draw(batch, camFixedTo.name, (-staticViewport.getWorldWidth() / 2) + 210,
+					(-staticViewport.getWorldHeight() / 2) + 340);
+			font.draw(batch, "Mass: " + camFixedTo.m, (-staticViewport.getWorldWidth() / 2) + 240,
+					(-staticViewport.getWorldHeight() / 2) + 280);
+			font.draw(batch, "Radius: " + camFixedTo.r, (-staticViewport.getWorldWidth() / 2) + 240,
+					(-staticViewport.getWorldHeight() / 2) + 260);
+			font.draw(batch, "Position:", (-staticViewport.getWorldWidth() / 2) + 240,
+					(-staticViewport.getWorldHeight() / 2) + 240);
+			font.draw(batch, "X: " + camFixedTo.pos.x, (-staticViewport.getWorldWidth() / 2) + 250,
+					(-staticViewport.getWorldHeight() / 2) + 220);
+			font.draw(batch, "Y: " + camFixedTo.pos.y, (-staticViewport.getWorldWidth() / 2) + 250,
+					(-staticViewport.getWorldHeight() / 2) + 200);
+			font.draw(batch, "Velocity:", (-staticViewport.getWorldWidth() / 2) + 240,
+					(-staticViewport.getWorldHeight() / 2) + 180);
+			font.draw(batch, "X: " + camFixedTo.vel.x, (-staticViewport.getWorldWidth() / 2) + 250,
+					(-staticViewport.getWorldHeight() / 2) + 160);
+			font.draw(batch, "Y: " + camFixedTo.vel.y, (-staticViewport.getWorldWidth() / 2) + 250,
+					(-staticViewport.getWorldHeight() / 2) + 140);
+		}
+		// TODO: Simulation GUI
 	}
 
-	/** draws the far and the near grid depending on the zoom**/
+	/** draws the far and the near grid depending on the zoom **/
 	private void drawGrids() {
 		// Draw first grid
 		sR.setProjectionMatrix(farGridCam.combined);
@@ -135,8 +171,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
 		}
-		for (float x = (float) ((-mainCam.position.x / factor) % 10) - 10; farGridCam.frustum.pointInFrustum(x + 4.5f, 0,
-				0); x -= 10) {
+		for (float x = (float) ((-mainCam.position.x / factor) % 10) - 10; farGridCam.frustum.pointInFrustum(x + 4.5f,
+				0, 0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
 
@@ -149,8 +185,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				0); x += 10) {
 			drawVerticalPoints(x, factor);
 		}
-		for (float x = (float) ((-mainCam.position.x / factor) % 10) - 10; nearGridCam.frustum.pointInFrustum(x + 4.5f, 0,
-				0); x -= 10) {
+		for (float x = (float) ((-mainCam.position.x / factor) % 10) - 10; nearGridCam.frustum.pointInFrustum(x + 4.5f,
+				0, 0); x -= 10) {
 			drawVerticalPoints(x, factor);
 		}
 	}
@@ -188,16 +224,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	/**
 	 * Draws a line of points on the screen with a distance dependent from the
 	 * camera-zoom and beginning always at the same ingame position
-	 * @param x ,Position where drawing of the points in y direction should begin
-	 * @param factor ,the next power of ten of the zoom for calculating the beginning y position
+	 * 
+	 * @param x      ,Position where drawing of the points in y direction should
+	 *               begin
+	 * @param factor ,the next power of ten of the zoom for calculating the
+	 *               beginning y position
 	 **/
 	private void drawVerticalPoints(float x, double factor) {
 		for (float y = (float) ((-mainCam.position.y / factor) % 10); farGridCam.frustum.pointInFrustum(0, y - 4.5f,
 				0); y += 10) {
 			sR.rectLine(x - 0.5f, y, x + 0.5f, y, 1);
 		}
-		for (float y = (float) ((-mainCam.position.y / factor) % 10) - 10; farGridCam.frustum.pointInFrustum(0, y + 4.5f,
-				0); y -= 10) {
+		for (float y = (float) ((-mainCam.position.y / factor) % 10) - 10; farGridCam.frustum.pointInFrustum(0,
+				y + 4.5f, 0); y -= 10) {
 			sR.rectLine(x - 0.5f, y, x + 0.5f, y, 1);
 		}
 	}
