@@ -8,6 +8,7 @@ public class EntityManager {
 
 	final static int STEPS = 100; // calculation steps per move
 	float speed = 1; // ingame-seconds per real seconds
+	float elapsedTime = 0;
 	Array<Particle> p;
 	final protected float G = 6.6743E-11f;
 	boolean running;
@@ -23,6 +24,7 @@ public class EntityManager {
 	/** Moves every particle by calling the calcGravity method and applying the velocity to the position **/
 	public void moveParticles(float dt) {
 		if (running) {
+			elapsedTime += dt * speed;
 			for (int i = 0; i < STEPS; i++) {
 				calcGravity((dt * speed) / STEPS);
 				for (Particle p : p) {

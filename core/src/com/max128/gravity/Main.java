@@ -1,10 +1,11 @@
 package com.max128.gravity;
 
+import java.text.DecimalFormat;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -26,6 +27,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private float zoomTarget;
 	private float frameTimeCounter;
+	private int frameTimeAddingCounter;
 	private float frameTime;
 	private Particle camFixedTo;
 
@@ -39,7 +41,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private OrthographicCamera nearGridCam;
 	private OrthographicCamera staticCam;
 
-	BitmapFont font;
+	private BitmapFont font;
+	private DecimalFormat dF;
 
 	private ShapeRenderer sR;
 	private SpriteBatch batch;
@@ -65,6 +68,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		parameter.shadowOffsetX = 2;
 		parameter.shadowOffsetY = 2;
 		font = new FreeTypeFontGenerator(Gdx.files.internal("consolas.ttf")).generateFont(parameter);
+		dF = new DecimalFormat("0,000");
 		sR.setAutoShapeType(true);
 		Gdx.input.setInputProcessor(this);
 		if (eM.getP().size > 0) {
@@ -94,6 +98,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		zoomToTarget(Gdx.graphics.getDeltaTime());
 		checkForInput();
 		eM.moveParticles(Gdx.graphics.getDeltaTime());
+		updateAverageFrameTime();
+		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
 
 		// ShapeRenderer rendering preperation
 		Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -103,7 +109,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Rendering with Shaperenderer
-		drawGrids();
+		drawGrids(factor);
 		drawFarParticles();
 
 		// ShapeRenderer rendering postprocessing
@@ -116,8 +122,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		// Rendering with spriteBatch
 		drawNearParticles();
-		updateAverageFrameTime();
-		drawGUI();
+		drawGUI(factor);
 
 		// SpriteBatch rendering postprocessing
 		batch.end();
@@ -131,17 +136,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		nearGridCam.update();
 		super.render();
 	}
-	
+
 	private void updateAverageFrameTime() {
+		frameTimeAddingCounter += 1;
 		frameTimeCounter += Gdx.graphics.getDeltaTime();
-		if(frameTimeCounter >= 1) {
+		if (frameTimeCounter >= 1) {
+			frameTime = frameTimeCounter / frameTimeAddingCounter;
 			frameTimeCounter = 0;
-			frameTime = Gdx.graphics.getDeltaTime();
+			frameTimeAddingCounter = 0;
 		}
 	}
 
 	/** Draws the graphical user interface for interaction with Particles **/
-	private void drawGUI() {
+	private void drawGUI(double factor) {
 		// Particle GUI
 		batch.setProjectionMatrix(staticCam.combined);
 		if (camFixedTo != null) {
@@ -156,39 +163,65 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 					(-staticViewport.getWorldHeight() / 2) + 260);
 			font.draw(batch, "Position:", (-staticViewport.getWorldWidth() / 2) + 240,
 					(-staticViewport.getWorldHeight() / 2) + 240);
-			font.draw(batch, "X: " + camFixedTo.pos.x, (-staticViewport.getWorldWidth() / 2) + 250,
+			font.draw(batch, "X: " + dF.format(camFixedTo.pos.x) + " m", (-staticViewport.getWorldWidth() / 2) + 250,
 					(-staticViewport.getWorldHeight() / 2) + 220);
-			font.draw(batch, "Y: " + camFixedTo.pos.y, (-staticViewport.getWorldWidth() / 2) + 250,
+			font.draw(batch, "Y: " + dF.format(camFixedTo.pos.y) + " m", (-staticViewport.getWorldWidth() / 2) + 250,
 					(-staticViewport.getWorldHeight() / 2) + 200);
 			font.draw(batch, "Velocity:", (-staticViewport.getWorldWidth() / 2) + 240,
 					(-staticViewport.getWorldHeight() / 2) + 180);
-			font.draw(batch, "X: " + camFixedTo.vel.x, (-staticViewport.getWorldWidth() / 2) + 250,
+			font.draw(batch, "X: " + dF.format(camFixedTo.vel.x) + " m/s", (-staticViewport.getWorldWidth() / 2) + 250,
 					(-staticViewport.getWorldHeight() / 2) + 160);
-			font.draw(batch, "Y: " + camFixedTo.vel.y, (-staticViewport.getWorldWidth() / 2) + 250,
+			font.draw(batch, "Y: " + dF.format(camFixedTo.vel.y) + " m/s", (-staticViewport.getWorldWidth() / 2) + 250,
 					(-staticViewport.getWorldHeight() / 2) + 140);
 		}
 		// TODO: Simulation GUI
-		batch.draw(Textures.BOX,(staticViewport.getWorldWidth() / 2) - 360,-staticViewport.getWorldHeight() / 2,360,270);
-		font.draw(batch, "Simulation" , (staticViewport.getWorldWidth() / 2) - 230, (-staticViewport.getWorldHeight() / 2) + 250);			
-		if(eM.running) {
-			font.draw(batch, "Running" , (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 210);			
+		batch.draw(Textures.BOX, (staticViewport.getWorldWidth() / 2) - 360, -staticViewport.getWorldHeight() / 2, 360,
+				270);
+		font.draw(batch, "Simulation", (staticViewport.getWorldWidth() / 2) - 230,
+				(-staticViewport.getWorldHeight() / 2) + 250);
+		if (eM.running) {
+			font.draw(batch, "Running", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 210);
 		} else {
-			font.draw(batch, "Paused" , (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 210);						
+			font.draw(batch, "Paused", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 210);
 		}
-		font.draw(batch, "Speed: " + eM.speed + " sec/sec", (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 190);
-		font.draw(batch, "Particle count: " + eM.getP().size ,(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 170);
-		font.draw(batch, "Steps: " + EntityManager.STEPS ,(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 150);
-		font.draw(batch, "Frametime: " + (float) (Math.round(frameTime * 100000)) / 100f + " ms/frame",(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 130);			
-		if(frameTime != 0) {
-			font.draw(batch, "FPS: " + (1000 / (Math.round(frameTime * 1000))) + " frames/s",(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 110);			
+		font.draw(batch, "Speed: " + eM.speed + " sec/sec", (staticViewport.getWorldWidth() / 2) - 340,
+				(-staticViewport.getWorldHeight() / 2) + 190);
+		font.draw(batch, "Particle count: " + eM.getP().size, (staticViewport.getWorldWidth() / 2) - 340,
+				(-staticViewport.getWorldHeight() / 2) + 170);
+		font.draw(batch, "Steps: " + EntityManager.STEPS, (staticViewport.getWorldWidth() / 2) - 340,
+				(-staticViewport.getWorldHeight() / 2) + 150);
+		font.draw(batch, "Frametime: " + dF.format(frameTime * 1000) + " ms/frame",
+				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 130);
+		if (frameTime != 0) {
+			font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + " frames/s",
+					(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 110);
+		} else {
+			font.draw(batch, "FPS: " + 0 + " frames/s", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 110);
+		}
+		font.draw(batch, "Time Elapsed: " + dF.format(eM.elapsedTime) + " s",
+				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 90);
+		if (factor < 100) {
+			font.draw(batch, "Zoom: " + factor * 100 + " m/grid block", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 70);
+		} else if(factor < 100000){
+			font.draw(batch, "Zoom: " + factor / 10 + " km/grid block", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 70);
+		} else if(factor < 100000000){
+			font.draw(batch, "Zoom: " + factor / 10000 + " Tkm/grid block", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 70);			
+		} else {
+			font.draw(batch, "Zoom: " + factor / 10000000 + " Mkm/grid block", (staticViewport.getWorldWidth() / 2) - 340,
+					(-staticViewport.getWorldHeight() / 2) + 70);						
 		}
 	}
 
 	/** draws the far and the near grid depending on the zoom **/
-	private void drawGrids() {
+	private void drawGrids(double factor) {
 		// Draw first grid
 		sR.setProjectionMatrix(farGridCam.combined);
-		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
 		farGridCam.zoom = (float) ((mainCam.zoom) / factor);
 		sR.setColor(0.2f, 0.2f, 0.2f, (float) ((-2.2222 * farGridCam.zoom) + 1.11111111));
 
