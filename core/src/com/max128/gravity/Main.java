@@ -25,6 +25,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	final static int HEIGHT = 1080;
 
 	private float zoomTarget;
+	private float frameTimeCounter;
+	private float frameTime;
 	private Particle camFixedTo;
 
 	private Viewport mainViewport;
@@ -114,6 +116,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		// Rendering with spriteBatch
 		drawNearParticles();
+		updateAverageFrameTime();
 		drawGUI();
 
 		// SpriteBatch rendering postprocessing
@@ -128,12 +131,20 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		nearGridCam.update();
 		super.render();
 	}
+	
+	private void updateAverageFrameTime() {
+		frameTimeCounter += Gdx.graphics.getDeltaTime();
+		if(frameTimeCounter >= 1) {
+			frameTimeCounter = 0;
+			frameTime = Gdx.graphics.getDeltaTime();
+		}
+	}
 
 	/** Draws the graphical user interface for interaction with Particles **/
 	private void drawGUI() {
 		// Particle GUI
+		batch.setProjectionMatrix(staticCam.combined);
 		if (camFixedTo != null) {
-			batch.setProjectionMatrix(staticCam.combined);
 			batch.draw(Textures.BOX, -staticViewport.getWorldWidth() / 2, -staticViewport.getWorldHeight() / 2);
 			batch.draw(camFixedTo.tex, (-staticViewport.getWorldWidth() / 2) + 30,
 					(-staticViewport.getWorldHeight() / 2) + 80, 200, 200);
@@ -157,6 +168,20 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 					(-staticViewport.getWorldHeight() / 2) + 140);
 		}
 		// TODO: Simulation GUI
+		batch.draw(Textures.BOX,(staticViewport.getWorldWidth() / 2) - 360,-staticViewport.getWorldHeight() / 2,360,270);
+		font.draw(batch, "Simulation" , (staticViewport.getWorldWidth() / 2) - 230, (-staticViewport.getWorldHeight() / 2) + 250);			
+		if(eM.running) {
+			font.draw(batch, "Running" , (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 210);			
+		} else {
+			font.draw(batch, "Paused" , (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 210);						
+		}
+		font.draw(batch, "Speed: " + eM.speed + " sec/sec", (staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 190);
+		font.draw(batch, "Particle count: " + eM.getP().size ,(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 170);
+		font.draw(batch, "Steps: " + EntityManager.STEPS ,(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 150);
+		font.draw(batch, "Frametime: " + (float) (Math.round(frameTime * 100000)) / 100f + " ms/frame",(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 130);			
+		if(frameTime != 0) {
+			font.draw(batch, "FPS: " + (1000 / (Math.round(frameTime * 1000))) + " frames/s",(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 110);			
+		}
 	}
 
 	/** draws the far and the near grid depending on the zoom **/
@@ -296,6 +321,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			eM.speed *= 0.5f;
 			break;
 		case Input.Keys.R:
+			camFixedTo = null;
 			mainCam.position.setZero();
 			zoomTarget = 1f;
 			mainCam.zoom = 1f;
