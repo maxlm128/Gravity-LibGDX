@@ -9,7 +9,7 @@ public class Particle {
 	Vector2 vel; // velocity in m/s
 	float r; // radius in meters
 	float m; // mass in kg
-	Texture tex;
+	Texture tex; //Texture of the particle
 	
 
 	/**

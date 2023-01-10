@@ -13,11 +13,11 @@ public class Textures {
 	/** Loads the textures from local files into the graphics-card memory and stores
 	them into variables **/
 	public static void loadTextures() {
-		SUN = new Texture("sun.png");
-		EARTH = new Texture("earth.png");
-		ISS = new Texture("iss.png");
-		MOON = new Texture("moon.png");
-		BOX = new Texture("box.png");
+		SUN = new Texture("textures/particles/sun.png");
+		EARTH = new Texture("textures/particles/earth.png");
+		ISS = new Texture("textures/particles/iss.png");
+		MOON = new Texture("textures/particles/moon.png");
+		BOX = new Texture("textures/gui/box.png");
 	}
 
 	/** Disposes the textures **/

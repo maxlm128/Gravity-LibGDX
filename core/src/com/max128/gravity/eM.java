@@ -4,16 +4,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 /** Manages the Entitys, including the Particles  **/
-public class EntityManager {
+public class eM {
 
-	final static int STEPS = 100; // calculation steps per move
+	final int STEPS = 10; // calculation steps per move
 	float speed = 1; // ingame-seconds per real seconds
 	float elapsedTime = 0;
-	Array<Particle> p;
+	private Array<Particle> p;
 	final protected float G = 6.6743E-11f;
 	boolean running;
 
-	public EntityManager() {
+	public eM() {
 		p = new Array<Particle>();
 		p.add(new Particle(1E7f, 0, 29780f, 0, 5.972E24f, 6.371E6f, Textures.EARTH, "Earth")); // Earth
 		p.add(new Particle(1E7f, 149600000000f, 0, 0, 1.9884E30f, 696340000f, Textures.SUN, "Sun")); // Sun
@@ -68,6 +68,6 @@ public class EntityManager {
 
 	/** Returns the LibGDX array-list of all particles **/
 	public Array<Particle> getP() {
-		return this.p;
+		return p;
 	}
 }
