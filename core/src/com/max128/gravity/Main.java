@@ -34,7 +34,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private GUIRenderer guiR;
 	private ShapeRenderer sR;
 	private SpriteBatch batch;
-	private eM eM;
+	private EntityManager eM;
 
 	@Override
 	public void create() {
@@ -45,7 +45,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		farGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), farGridCam);
 		nearGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), nearGridCam);
 		Textures.loadTextures();
-		eM = new eM();
+		eM = new EntityManager();
 		sR = new ShapeRenderer();
 		batch = new SpriteBatch();
 		guiR = new GUIRenderer(batch, eM);
@@ -102,14 +102,15 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		// Rendering with spriteBatch
 		drawNearParticles();
-		guiR.drawHUD((float) factor * 100, camFixedTo);
+		guiR.drawCurrentGUIs();
+		// (float) factor * 100, camFixedTo
 
 		// SpriteBatch rendering postprocessing
 		batch.end();
 
 		// Update camera position to fixed position
 		updateToFixedPos();
-		
+
 		// Updating Cameras
 		mainCam.update();
 		farGridCam.update();
@@ -224,7 +225,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
-	/** Approaches the camera-zoom to the zoomTarget with every execution **/
+	/**
+	 * Approaches the camera-zoom to the zoomTarget with every execution
+	 * 
+	 * @param dt ,delta time of the type float
+	 **/
 	private void zoomToTarget(float dt) {
 		if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
 			mainCam.zoom += (zoomTarget - mainCam.zoom) * dt * 7;

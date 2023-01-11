@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 /** Manages the Entitys, including the Particles  **/
-public class eM {
+public class EntityManager {
 
 	final int STEPS = 10; // calculation steps per move
 	float speed = 1; // ingame-seconds per real seconds
@@ -13,7 +13,7 @@ public class eM {
 	final protected float G = 6.6743E-11f;
 	boolean running;
 
-	public eM() {
+	public EntityManager() {
 		p = new Array<Particle>();
 		p.add(new Particle(1E7f, 0, 29780f, 0, 5.972E24f, 6.371E6f, Textures.EARTH, "Earth")); // Earth
 		p.add(new Particle(1E7f, 149600000000f, 0, 0, 1.9884E30f, 696340000f, Textures.SUN, "Sun")); // Sun
