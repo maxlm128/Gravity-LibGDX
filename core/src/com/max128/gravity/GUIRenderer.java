@@ -84,6 +84,9 @@ public class GUIRenderer {
 			for (GUIElement subGUIElement : ((GUIElementGroup) guiElement).subGuiElements) {
 				drawGUIElement(subGUIElement, posx + subGUIElement.pos.x, posy + subGUIElement.pos.y);
 			}
+		} else if (guiElement instanceof GUIElementTexture) {
+			batch.draw(((GUIElementTexture) guiElement).texture, posx, posy,
+					((GUIElementTexture) guiElement).width, ((GUIElementTexture) guiElement).height);
 		}
 	}
 
