@@ -13,37 +13,51 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+/** Class for rendering and managing all GUIs **/
 public class GUIRenderer {
 
 	private SpriteBatch batch;
 	private BitmapFont font;
 	private DecimalFormat dF;
-	private OrthographicCamera staticCam;
-	private EntityManager eM;
 
+	// Variables for GUIs
+	private GUIElementText framesPerSecond;
 	private GUIElementText frameTime;
+	private GUIElementText gameState;
+	private GUIElementText gameSpeed;
+	private GUIElementText gameSteps;
+	private GUIElementText timeElapsed;
+	private GUIElementText cameraZoom;
+	private GUIElementText particleCount;
+
 	private float frameTimeCounter;
 	private int frameTimeAddingCounter;
 	private Viewport staticViewport;
 	private Array<GUI> guis;
 	private Array<GUI> currentGUIs;
 
-	/** Class for rendering and managing all GUIs **/
-	public GUIRenderer(SpriteBatch batch, EntityManager eM) {
-		staticCam = new OrthographicCamera(Main.WIDTH, Main.HEIGHT);
-		staticViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), staticCam);
+	public GUIRenderer(SpriteBatch batch, Viewport staticViewport, int gameSteps) {
+
+		this.staticViewport = staticViewport;
 
 		// Variable GUIElements for the GUIs
+		framesPerSecond = new GUIElementText(0, 0, "FPS: 0 frames/s");
 		frameTime = new GUIElementText(0, 0, "FrameTime: 0 ms/frame");
+		gameState = new GUIElementText(0, 0, "");
+		this.gameSpeed = new GUIElementText(0, 0, "");
+		this.gameSteps = new GUIElementText(0, 0, "");
+		timeElapsed = new GUIElementText(0, 0, "");
+		cameraZoom = new GUIElementText(0, 0, "");
+		particleCount = new GUIElementText(0, 0, "");
 
 		// Setup of the GUIs
 		guis = new Array<>(10);
 		currentGUIs = new Array<>(10);
 		// Simulation GUI
-		guis.add(new SimulationGUI(0, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), frameTime));
+		guis.add(new SimulationGUI(0, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), framesPerSecond,
+				frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom, particleCount));
 		currentGUIs.add(guis.first());
 
-		this.eM = eM;
 		this.batch = batch;
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		parameter.size = 18;
@@ -56,18 +70,14 @@ public class GUIRenderer {
 
 	/** Draws all the GUIs stored in the GUIRenderer **/
 	public void drawCurrentGUIs() {
-		updateGUIVariables();
-		batch.setProjectionMatrix(staticCam.combined);
+		updateAverageFrameTime();
+		updateFramesPerSecond();
+		batch.setProjectionMatrix(staticViewport.getCamera().combined);
 		for (GUI gui : currentGUIs) {
 			for (GUIElement guiElement : gui.guiElements) {
 				drawGUIElement(guiElement, guiElement.pos.x, guiElement.pos.y);
 			}
 		}
-	}
-
-	/** Updates all Variables which are used in the GUIs **/
-	public void updateGUIVariables() {
-		updateAverageFrameTime();
 	}
 
 	/**
@@ -85,8 +95,8 @@ public class GUIRenderer {
 				drawGUIElement(subGUIElement, posx + subGUIElement.pos.x, posy + subGUIElement.pos.y);
 			}
 		} else if (guiElement instanceof GUIElementTexture) {
-			batch.draw(((GUIElementTexture) guiElement).texture, posx, posy,
-					((GUIElementTexture) guiElement).width, ((GUIElementTexture) guiElement).height);
+			batch.draw(((GUIElementTexture) guiElement).texture, posx, posy, ((GUIElementTexture) guiElement).width,
+					((GUIElementTexture) guiElement).height);
 		}
 	}
 
@@ -137,9 +147,9 @@ public class GUIRenderer {
 //				(-staticViewport.getWorldHeight() / 2) + 170);
 //		font.draw(batch, "Steps: " + eM.STEPS, (staticViewport.getWorldWidth() / 2) - 340,
 //				(-staticViewport.getWorldHeight() / 2) + 150);
-//		font.draw(batch, "Frametime: " + dF.format(Integer.parseInt(frameTime.getTextContent()) * 1000) + " ms/frame",
+//		font.draw(batch, "Frametime: " + dF.format(Integer.parseInt("100")) + " ms/frame",
 //				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 130);
-//		if (Integer.parseInt(frameTime.getTextContent()) != 0) {
+//		if (Integer.parseInt("100") != 0) {
 //			font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + " frames/s",
 //					(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 110);
 //		} else {
@@ -175,6 +185,10 @@ public class GUIRenderer {
 			return " Mkm";
 		}
 	}
+	
+	private void updateFramesPerSecond() {
+		framesPerSecond.setTextContent("FPS: " + Gdx.graphics.getFramesPerSecond() + " frames/s");
+	}
 
 	/** Updates the average frametime of the last second **/
 	private void updateAverageFrameTime() {
@@ -188,16 +202,32 @@ public class GUIRenderer {
 		}
 	}
 
-	/**
-	 * Resizes the static viewport for rendering the GUIs and updates the world
-	 * dimensions
-	 * 
-	 * @param width  ,width of the screen
-	 * @param height ,height of the screen
-	 **/
-	public void resize(int width, int height) {
-		staticViewport.update(width, height);
-		updateGUIWorldDimensions(width, height);
+	public void updateGameState(boolean running) {
+		if (running) {
+			gameState.setTextContent("Running");
+		} else {
+			gameState.setTextContent("Paused");
+		}
+	}
+
+	public void updateGameSpeed(float gameSpeed) {
+		this.gameSpeed.setTextContent("Speed: " + gameSpeed + " sec/sec");
+	}
+
+	public void updateTimeElapsed(float timeElapsed) {
+		this.timeElapsed.setTextContent("Time elapsed: " + dF.format(timeElapsed) + " s");
+	}
+
+	public void updateCameraZoom(float factor) {
+		this.cameraZoom.setTextContent("Zoom: " + numberToFormattedNumber(factor) + getUnit(factor) + "/grid block");
+	}
+
+	public void updateParticleCount(int particleCount) {
+		this.particleCount.setTextContent("Particle count: " + particleCount);
+	}
+
+	public void updateGameSteps(int gameSteps) {
+		this.gameSteps.setTextContent("Steps: " + gameSteps);
 	}
 
 	/**
@@ -207,9 +237,9 @@ public class GUIRenderer {
 	 * @param screenWidth  ,width of the screen
 	 * @param screenHeight ,height of the screen
 	 **/
-	public void updateGUIWorldDimensions(float screenWidth, float screenHeight) {
+	public void updateGUIWorldDimensions() {
 		for (GUI gui : guis) {
-			gui.updateWorldDimensions(screenWidth, screenHeight);
+			gui.updateWorldDimensions(staticViewport.getWorldWidth(), staticViewport.getWorldHeight());
 		}
 	}
 }

@@ -9,9 +9,9 @@ public class EntityManager {
 	final int STEPS = 10; // calculation steps per move
 	float speed = 1; // ingame-seconds per real seconds
 	float elapsedTime = 0;
+	boolean running;
 	private Array<Particle> p;
 	final protected float G = 6.6743E-11f;
-	boolean running;
 
 	public EntityManager() {
 		p = new Array<Particle>();

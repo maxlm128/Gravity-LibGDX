@@ -26,10 +26,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private Viewport mainViewport;
 	private Viewport farGridViewport;
 	private Viewport nearGridViewport;
+	private Viewport staticViewport;
 
 	private OrthographicCamera mainCam;
 	private OrthographicCamera farGridCam;
 	private OrthographicCamera nearGridCam;
+	private OrthographicCamera staticCam;
 
 	private GUIRenderer guiR;
 	private ShapeRenderer sR;
@@ -38,33 +40,49 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void create() {
+		Textures.loadTextures();
+
+		// Viewports and Cameras
 		mainCam = new OrthographicCamera(WIDTH, HEIGHT);
 		farGridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		nearGridCam = new OrthographicCamera(WIDTH, HEIGHT);
+		staticCam = new OrthographicCamera(Main.WIDTH, Main.HEIGHT);
 		mainViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), mainCam);
 		farGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), farGridCam);
 		nearGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), nearGridCam);
-		Textures.loadTextures();
+		staticViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), staticCam);
+
 		eM = new EntityManager();
 		sR = new ShapeRenderer();
 		batch = new SpriteBatch();
-		guiR = new GUIRenderer(batch, eM);
-		sR.setAutoShapeType(true);
-		Gdx.input.setInputProcessor(this);
+		guiR = new GUIRenderer(batch, staticViewport, eM.STEPS);
+
 		if (eM.getP().size > 0) {
 			camFixedTo = eM.getP().get(0);
 			mainCam.zoom = camFixedTo.r / 100;
 		}
+		sR.setAutoShapeType(true);
+		Gdx.input.setInputProcessor(this);
 		zoomTarget = mainCam.zoom;
+
+		// Update the Variables on startupi
+		guiR.updateCameraZoom((float) Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100f);
+		guiR.updateGameSpeed(eM.speed);
+		guiR.updateGameState(eM.running);
+		guiR.updateGameSteps(eM.STEPS);
+		guiR.updateParticleCount(eM.getP().size);
+		guiR.updateTimeElapsed(eM.elapsedTime);
+
 		super.create();
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		mainViewport.update(width, height);
-		farGridViewport.update(width, height);
-		nearGridViewport.update(width, height);
-		guiR.resize(width, height);
+		staticViewport.update(width, height);
+		mainViewport.update(staticViewport.getScreenWidth(), staticViewport.getScreenHeight());
+		farGridViewport.update(staticViewport.getScreenWidth(), staticViewport.getScreenHeight());
+		nearGridViewport.update(staticViewport.getScreenWidth(), staticViewport.getScreenHeight());
+		guiR.updateGUIWorldDimensions();
 	}
 
 	@Override
@@ -75,11 +93,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
+		// Update variables
+		guiR.updateTimeElapsed(eM.elapsedTime);
+
 		// Calculations
 		zoomToTarget(Gdx.graphics.getDeltaTime());
 		checkForInput();
 		eM.moveParticles(Gdx.graphics.getDeltaTime());
-		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
 
 		// ShapeRenderer rendering preperation
 		Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -89,6 +109,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
 		// Rendering with Shaperenderer
+		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
 		drawGrids(factor);
 		drawFarParticles();
 
@@ -103,7 +124,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		// Rendering with spriteBatch
 		drawNearParticles();
 		guiR.drawCurrentGUIs();
-		// (float) factor * 100, camFixedTo
+//		guiR.drawHUD((float) factor, camFixedTo);
 
 		// SpriteBatch rendering postprocessing
 		batch.end();
@@ -160,13 +181,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	/** Draw far particles with ShapeRenderer **/
+	// TODO: Fix far particle drawing
 	private void drawFarParticles() {
 		sR.setColor(1f, 1f, 1f, 1f);
-		sR.setProjectionMatrix(mainCam.combined);
+		sR.setProjectionMatrix(staticCam.combined);
 		for (Particle p : eM.getP()) {
 			if (p.r / mainCam.zoom < 1) {
 				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom,
-						(-mainCam.position.y + p.pos.y) / mainCam.zoom, mainCam.zoom, 10);
+						(-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
 			}
 		}
 	}
@@ -233,8 +255,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private void zoomToTarget(float dt) {
 		if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
 			mainCam.zoom += (zoomTarget - mainCam.zoom) * dt * 7;
+			double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
+			guiR.updateCameraZoom((float) (factor * 100));
 		} else if (mainCam.zoom != zoomTarget) {
 			mainCam.zoom = zoomTarget;
+			double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
+			guiR.updateCameraZoom((float) (factor * 100));
 		}
 	}
 
@@ -243,6 +269,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		switch (keycode) {
 		case Input.Keys.SPACE:
 			eM.running = !eM.running;
+			guiR.updateGameState(eM.running);
 			break;
 		case Input.Keys.F11:
 			if (!Gdx.graphics.isFullscreen()) {
@@ -253,9 +280,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			break;
 		case Input.Keys.UP:
 			eM.speed *= 2;
+			guiR.updateGameSpeed(eM.speed);
 			break;
 		case Input.Keys.DOWN:
 			eM.speed *= 0.5f;
+			guiR.updateGameSpeed(eM.speed);
 			break;
 		case Input.Keys.R:
 			camFixedTo = null;
