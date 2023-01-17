@@ -1,4 +1,4 @@
-package com.max128.gravity;
+package com.max128.gravity.GUIManagement.GUIElements;
 
 import com.badlogic.gdx.math.Vector2;
 
@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
  * General GUI element, which has a position and is rendered by the GUIRenderer
  **/
 public class GUIElement {
-	Vector2 pos;
+	public Vector2 pos;
 
 	/**
 	 * creates a new GUIElement

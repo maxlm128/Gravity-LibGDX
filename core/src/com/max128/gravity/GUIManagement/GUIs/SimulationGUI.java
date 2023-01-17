@@ -1,4 +1,10 @@
-package com.max128.gravity;
+package com.max128.gravity.GUIManagement.GUIs;
+
+import com.max128.gravity.Textures;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElement;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElementGroup;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElementText;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElementTexture;
 
 public class SimulationGUI extends GUI {
 	/** The GUI, where informations for the Simulation are displayed **/

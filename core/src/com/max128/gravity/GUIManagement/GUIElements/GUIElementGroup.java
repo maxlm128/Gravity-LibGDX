@@ -1,4 +1,4 @@
-package com.max128.gravity;
+package com.max128.gravity.GUIManagement.GUIElements;
 
 import com.badlogic.gdx.utils.Array;
 
@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Array;
  * relative to the position of the element group
  **/
 public class GUIElementGroup extends GUIElement {
-	Array<GUIElement> subGuiElements;
+	public Array<GUIElement> subGuiElements;
 
 	/**
 	 * Creates a new GUIElementGroup with its x and y position

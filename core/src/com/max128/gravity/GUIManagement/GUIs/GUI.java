@@ -1,10 +1,11 @@
-package com.max128.gravity;
+package com.max128.gravity.GUIManagement.GUIs;
 
 import com.badlogic.gdx.utils.Array;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElement;
 
 public class GUI {
-	Array<GUIElement> guiElements;
-	int id;
+	protected Array<GUIElement> guiElements;
+	public int id;
 	float screenWidth, screenHeight;
 
 	/**
@@ -13,6 +14,7 @@ public class GUI {
 	 **/
 	public GUI(int id) {
 		this.id = id;
+		guiElements = new Array<>(10);
 	}
 
 	/**
@@ -21,8 +23,11 @@ public class GUI {
 	 * @param guiElement ,the GUI element with the type GUIElement
 	 **/
 	protected void addGUIElement(GUIElement guiElement) {
-		guiElements = new Array<>(10);
 		guiElements.add(guiElement);
+	}
+	
+	public Array<GUIElement> getGUIElements(){
+		return guiElements;
 	}
 
 	/**

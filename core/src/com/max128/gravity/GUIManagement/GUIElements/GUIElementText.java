@@ -1,4 +1,4 @@
-package com.max128.gravity;
+package com.max128.gravity.GUIManagement.GUIElements;
 
 public class GUIElementText extends GUIElement {
 	String textContent;
@@ -18,7 +18,7 @@ public class GUIElementText extends GUIElement {
 	 * 
 	 * @param textContent ,a String for the text content
 	 * **/
-	public void setTextContent(String textContent) {
+	public void updateTextContent(String textContent) {
 		this.textContent = textContent;
 	}
 }

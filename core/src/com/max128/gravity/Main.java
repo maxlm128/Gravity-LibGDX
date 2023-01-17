@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.max128.gravity.GUIManagement.GUIRenderer;
 
 /** Main class and Renderer of the Game **/
 public class Main extends ApplicationAdapter implements InputProcessor {
@@ -65,13 +66,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		Gdx.input.setInputProcessor(this);
 		zoomTarget = mainCam.zoom;
 
-		// Update the Variables on startupi
+		// Update the GUIVariables on startup
+		//Simulation GUI
 		guiR.updateCameraZoom((float) Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100f);
 		guiR.updateGameSpeed(eM.speed);
 		guiR.updateGameState(eM.running);
 		guiR.updateGameSteps(eM.STEPS);
 		guiR.updateParticleCount(eM.getP().size);
 		guiR.updateTimeElapsed(eM.elapsedTime);
+		//ParticleGUI
+		guiR.updateParticleName(camFixedTo.name);
+		guiR.updateParticleTexure(camFixedTo.tex);
+		guiR.updateParticleMass(camFixedTo.m);
+		guiR.updateParticleRadius(camFixedTo.r);
 
 		super.create();
 	}
@@ -95,6 +102,10 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public void render() {
 		// Update variables
 		guiR.updateTimeElapsed(eM.elapsedTime);
+		if(camFixedTo != null) {
+			guiR.updateParticlePosition(camFixedTo.pos);
+			guiR.updateParticleVelocity(camFixedTo.vel);
+		}
 
 		// Calculations
 		zoomToTarget(Gdx.graphics.getDeltaTime());
@@ -298,6 +309,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		camFixedTo = eM.posInParticle(mainCam.unproject(new Vector3(screenX, screenY, 0)));
+		if(camFixedTo != null) {
+			guiR.updateParticleName(camFixedTo.name);
+			guiR.updateParticleTexure(camFixedTo.tex);
+			guiR.updateParticleMass(camFixedTo.m);
+			guiR.updateParticleRadius(camFixedTo.r);
+		}
 		return false;
 	}
 
