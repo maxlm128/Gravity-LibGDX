@@ -315,6 +315,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			guiR.updateParticleMass(camFixedTo.m);
 			guiR.updateParticleRadius(camFixedTo.r);
 		}
+		guiR.processClick(screenX, screenY);
+		guiR.getGUI(1).visible = camFixedTo != null;
 		return false;
 	}
 
@@ -350,6 +352,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
+		guiR.processHover(screenX, screenY);
 		return false;
 	}
 

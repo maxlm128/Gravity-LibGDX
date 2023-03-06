@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElement;
-import com.max128.gravity.GUIManagement.GUIElements.GUIElementGroup;
+import com.max128.gravity.GUIManagement.GUIElements.GUIElementEventGroup;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementText;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementTexture;
 import com.max128.gravity.GUIManagement.GUIs.GUI;
@@ -36,7 +36,7 @@ public class GUIRenderer {
 	private GUIElementText timeElapsed;
 	private GUIElementText cameraZoom;
 	private GUIElementText particleCount;
-	// ParticleGUI Texture Name Mass Radius PositionXY VelocityXY
+	// ParticleGUI
 	private GUIElementTexture particleTexture;
 	private GUIElementText particleName;
 	private GUIElementText particleMass;
@@ -51,7 +51,6 @@ public class GUIRenderer {
 	private int frameTimeAddingCounter;
 	private Viewport staticViewport;
 	private Array<GUI> guis;
-	private Array<GUI> currentGUIs;
 
 	public GUIRenderer(SpriteBatch batch, Viewport staticViewport, int gameSteps) {
 
@@ -80,14 +79,13 @@ public class GUIRenderer {
 
 		// Setup of the GUIs
 		guis = new Array<>(10);
-		currentGUIs = new Array<>(10);
 		// Simulation GUI
-		guis.add(new SimulationGUI(0, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), framesPerSecond,
-				frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom, particleCount));
-		guis.add(new ParticleGUI(1, particleTexture, particleName, particleMass, particleRadius, particlePositionX,
-				particlePositionY, particleVelocity, particleVelocityX, particleVelocityY));
-		currentGUIs.add(guis.first());
-		currentGUIs.add(guis.get(1));
+		guis.add(new SimulationGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(),
+				framesPerSecond, frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom,
+				particleCount));
+		guis.add(new ParticleGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(),
+				particleTexture, particleName, particleMass, particleRadius, particlePositionX, particlePositionY,
+				particleVelocity, particleVelocityX, particleVelocityY));
 
 		this.batch = batch;
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -97,6 +95,22 @@ public class GUIRenderer {
 		parameter.shadowOffsetY = 2;
 		font = new FreeTypeFontGenerator(Gdx.files.internal("fonts/consolas.ttf")).generateFont(parameter);
 		dF = new DecimalFormat("0.000");
+	}
+
+	public void processClick(int screenX, int screenY) {
+		for (GUI gui : guis) {
+			if (gui.visible) {
+				gui.processClick(screenX, screenY);
+			}
+		}
+	}
+
+	public void processHover(int screenX, int screenY) {
+		for (GUI gui : guis) {
+			if (gui.visible) {
+				gui.processHover(screenX, screenY);
+			}
+		}
 	}
 
 	public void updateParticleVelocity(Vector2 vel) {
@@ -134,10 +148,11 @@ public class GUIRenderer {
 		updateAverageFrameTime();
 		updateFramesPerSecond();
 		batch.setProjectionMatrix(staticViewport.getCamera().combined);
-		for (GUI gui : currentGUIs) {
-			System.out.println(gui.id);
-			for (GUIElement guiElement : gui.getGUIElements()) {
-				drawGUIElement(guiElement, guiElement.pos.x, guiElement.pos.y);
+		for (GUI gui : guis) {
+			if (gui.visible) {
+				for (GUIElement guiElement : gui.getGUIElements()) {
+					drawGUIElement(guiElement, guiElement.pos.x, guiElement.pos.y);
+				}
 			}
 		}
 	}
@@ -150,79 +165,19 @@ public class GUIRenderer {
 	 * @param posy       ,the y-position of the guiElement
 	 **/
 	public void drawGUIElement(GUIElement guiElement, float posx, float posy) {
-		if (guiElement instanceof GUIElementText) {
-			font.draw(batch, ((GUIElementText) guiElement).getTextContent(), posx, posy);
-		} else if (guiElement instanceof GUIElementGroup) {
-			for (GUIElement subGUIElement : ((GUIElementGroup) guiElement).subGuiElements) {
-				drawGUIElement(subGUIElement, posx + subGUIElement.pos.x, posy + subGUIElement.pos.y);
+		if (guiElement.visible) {
+			if (guiElement instanceof GUIElementText) {
+				font.draw(batch, ((GUIElementText) guiElement).getTextContent(), posx, posy);
+			} else if (guiElement instanceof GUIElementEventGroup) {
+				for (GUIElement subGUIElement : ((GUIElementEventGroup) guiElement).subGuiElements) {
+					drawGUIElement(subGUIElement, posx + subGUIElement.pos.x, posy + subGUIElement.pos.y);
+				}
+			} else if (guiElement instanceof GUIElementTexture) {
+				batch.draw(((GUIElementTexture) guiElement).texture, posx, posy, ((GUIElementTexture) guiElement).width,
+						((GUIElementTexture) guiElement).height);
 			}
-		} else if (guiElement instanceof GUIElementTexture) {
-			batch.draw(((GUIElementTexture) guiElement).texture, posx, posy, ((GUIElementTexture) guiElement).width,
-					((GUIElementTexture) guiElement).height);
 		}
 	}
-
-//	/** Draws the HUD for Particles and the Simulation **/
-//	public void drawHUD(float factor, Particle camFixedTo) {
-//		updateAverageFrameTime();
-//		// Particle GUI
-//		batch.setProjectionMatrix(staticCam.combined);
-//		if (camFixedTo != null) {
-//			batch.draw(Textures.BOX, -staticViewport.getWorldWidth() / 2, -staticViewport.getWorldHeight() / 2);
-//			batch.draw(camFixedTo.tex, (-staticViewport.getWorldWidth() / 2) + 30,
-//					(-staticViewport.getWorldHeight() / 2) + 80, 200, 200);
-//			font.draw(batch, camFixedTo.name, (-staticViewport.getWorldWidth() / 2) + 210,
-//					(-staticViewport.getWorldHeight() / 2) + 340);
-//			font.draw(batch, "Mass: " + camFixedTo.m, (-staticViewport.getWorldWidth() / 2) + 240,
-//					(-staticViewport.getWorldHeight() / 2) + 280);
-//			font.draw(batch, "Radius: " + dF.format(numberToFormattedNumber(camFixedTo.r)) + getUnit(camFixedTo.r),
-//					(-staticViewport.getWorldWidth() / 2) + 240, (-staticViewport.getWorldHeight() / 2) + 260);
-//			font.draw(batch, "Position:", (-staticViewport.getWorldWidth() / 2) + 240,
-//					(-staticViewport.getWorldHeight() / 2) + 240);
-//			font.draw(batch, "X: " + dF.format(numberToFormattedNumber(camFixedTo.pos.x)) + getUnit(camFixedTo.pos.x),
-//					(-staticViewport.getWorldWidth() / 2) + 250, (-staticViewport.getWorldHeight() / 2) + 220);
-//			font.draw(batch, "Y: " + dF.format(numberToFormattedNumber(camFixedTo.pos.y)) + getUnit(camFixedTo.pos.y),
-//					(-staticViewport.getWorldWidth() / 2) + 250, (-staticViewport.getWorldHeight() / 2) + 200);
-//			font.draw(batch, "Velocity:", (-staticViewport.getWorldWidth() / 2) + 240,
-//					(-staticViewport.getWorldHeight() / 2) + 180);
-//			font.draw(batch,
-//					"X: " + dF.format(numberToFormattedNumber(camFixedTo.vel.x)) + getUnit(camFixedTo.vel.x) + "/s",
-//					(-staticViewport.getWorldWidth() / 2) + 250, (-staticViewport.getWorldHeight() / 2) + 160);
-//			font.draw(batch,
-//					"Y: " + dF.format(numberToFormattedNumber(camFixedTo.vel.y)) + getUnit(camFixedTo.vel.y) + "/s",
-//					(-staticViewport.getWorldWidth() / 2) + 250, (-staticViewport.getWorldHeight() / 2) + 140);
-//		}
-//		batch.draw(Textures.BOX, (staticViewport.getWorldWidth() / 2) - 360, -staticViewport.getWorldHeight() / 2, 360,
-//				270);
-//		font.draw(batch, "Simulation", (staticViewport.getWorldWidth() / 2) - 230,
-//				(-staticViewport.getWorldHeight() / 2) + 250);
-//		if (eM.running) {
-//			font.draw(batch, "Running", (staticViewport.getWorldWidth() / 2) - 340,
-//					(-staticViewport.getWorldHeight() / 2) + 210);
-//		} else {
-//			font.draw(batch, "Paused", (staticViewport.getWorldWidth() / 2) - 340,
-//					(-staticViewport.getWorldHeight() / 2) + 210);
-//		}
-//		font.draw(batch, "Speed: " + eM.speed + " sec/sec", (staticViewport.getWorldWidth() / 2) - 340,
-//				(-staticViewport.getWorldHeight() / 2) + 190);
-//		font.draw(batch, "Particle count: " + eM.getP().size, (staticViewport.getWorldWidth() / 2) - 340,
-//				(-staticViewport.getWorldHeight() / 2) + 170);
-//		font.draw(batch, "Steps: " + eM.STEPS, (staticViewport.getWorldWidth() / 2) - 340,
-//				(-staticViewport.getWorldHeight() / 2) + 150);
-//		font.draw(batch, "Frametime: " + dF.format(Integer.parseInt("100")) + " ms/frame",
-//				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 130);
-//		if (Integer.parseInt("100") != 0) {
-//			font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + " frames/s",
-//					(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 110);
-//		} else {
-//			font.draw(batch, "FPS: " + 0 + " frames/s", (staticViewport.getWorldWidth() / 2) - 340,
-//					(-staticViewport.getWorldHeight() / 2) + 110);
-//		}
-//		font.draw(batch, "Time Elapsed: " + dF.format(eM.elapsedTime) + " s",
-//				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 90);
-//		font.draw(batch, "Zoom: " + numberToFormattedNumber(factor) + getUnit(factor) + "/grid block",
-//				(staticViewport.getWorldWidth() / 2) - 340, (-staticViewport.getWorldHeight() / 2) + 70);
-//	}
 
 	private float numberToFormattedNumber(float number) {
 		if (number < 10000) {
@@ -303,5 +258,9 @@ public class GUIRenderer {
 		for (GUI gui : guis) {
 			gui.updateWorldDimensions(staticViewport.getWorldWidth(), staticViewport.getWorldHeight());
 		}
+	}
+	
+	public GUI getGUI(int id) {
+		return guis.get(id);
 	}
 }

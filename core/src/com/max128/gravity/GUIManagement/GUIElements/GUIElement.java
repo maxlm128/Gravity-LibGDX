@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
  **/
 public class GUIElement {
 	public Vector2 pos;
+	public boolean visible = true;
 
 	/**
 	 * creates a new GUIElement

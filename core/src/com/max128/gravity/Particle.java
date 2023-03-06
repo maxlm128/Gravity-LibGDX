@@ -10,7 +10,6 @@ public class Particle {
 	float r; // radius in meters
 	float m; // mass in kg
 	Texture tex; //Texture of the particle
-	
 
 	/**
 	 * @param x  ,position x of the particle

@@ -3,10 +3,11 @@ package com.max128.gravity;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-/** Manages the Entitys, including the Particles  **/
+
+/** Manages the Entitys, including the Particles **/
 public class EntityManager {
 
-	final int STEPS = 10; // calculation steps per move
+	final int STEPS = 100; // calculation steps per move
 	float speed = 1; // ingame-seconds per real seconds
 	float elapsedTime = 0;
 	boolean running;
@@ -21,7 +22,10 @@ public class EntityManager {
 		p.add(new Particle(1E7f, 6.371E6f + 400000, 7660 + 29780f, 0, 440000, 55, Textures.ISS, "ISS")); // ISS
 	}
 
-	/** Moves every particle by calling the calcGravity method and applying the velocity to the position **/
+	/**
+	 * Moves every particle by calling the calcGravity method and applying the
+	 * velocity to the position
+	 **/
 	public void moveParticles(float dt) {
 		if (running) {
 			elapsedTime += dt * speed;
@@ -29,14 +33,17 @@ public class EntityManager {
 				calcGravity((dt * speed) / STEPS);
 				for (Particle p : p) {
 					resolveCollision(p);
-					p.pos.add(p.vel.cpy().scl((speed * dt) / STEPS));
+					Vector2 vel = p.vel.cpy().scl((speed * dt) / STEPS);
+					p.pos.add(vel);
 				}
 			}
 		}
 	}
 
-	/** Checks if a position is inside a circle of a particle in the particle
-	array-list **/
+	/**
+	 * Checks if a position is inside a circle of a particle in the particle
+	 * array-list
+	 **/
 	public Particle posInParticle(Vector3 pos) {
 		for (Particle p : p) {
 			if (p.pos.dst(pos.x, pos.y) <= p.r) {
@@ -46,8 +53,10 @@ public class EntityManager {
 		return null;
 	}
 
-	/** Calculates the gravity from each particle to each other particle and applies
-	it to both particles. A calculation between two particles happens only once **/
+	/**
+	 * Calculates the gravity from each particle to each other particle and applies
+	 * it to both particles. A calculation between two particles happens only once
+	 **/
 	private void calcGravity(float dt) {
 		for (int i = 0; i < p.size; i++) {
 			for (int j = i + 1; j < p.size; j++) {
@@ -60,7 +69,7 @@ public class EntityManager {
 		}
 	}
 
-	//TODO:
+	// TODO:
 	/** Resolves the collision between two particles **/
 	private void resolveCollision(Particle p) {
 
