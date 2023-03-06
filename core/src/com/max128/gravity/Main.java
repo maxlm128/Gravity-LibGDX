@@ -316,7 +316,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			guiR.updateParticleRadius(camFixedTo.r);
 		}
 		guiR.processClick(screenX, screenY);
-		guiR.getGUI(1).visible = camFixedTo != null;
+		guiR.getGUI(0).getGUIElements().get(1).visible = camFixedTo != null;
 		return false;
 	}
 

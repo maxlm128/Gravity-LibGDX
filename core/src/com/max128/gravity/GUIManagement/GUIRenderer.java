@@ -16,8 +16,7 @@ import com.max128.gravity.GUIManagement.GUIElements.GUIElementEventGroup;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementText;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementTexture;
 import com.max128.gravity.GUIManagement.GUIs.GUI;
-import com.max128.gravity.GUIManagement.GUIs.ParticleGUI;
-import com.max128.gravity.GUIManagement.GUIs.SimulationGUI;
+import com.max128.gravity.GUIManagement.GUIs.GameGUI;
 
 /** Class for rendering and managing all GUIs **/
 public class GUIRenderer {
@@ -80,10 +79,8 @@ public class GUIRenderer {
 		// Setup of the GUIs
 		guis = new Array<>(10);
 		// Simulation GUI
-		guis.add(new SimulationGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(),
-				framesPerSecond, frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom,
-				particleCount));
-		guis.add(new ParticleGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(),
+		guis.add(new GameGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), framesPerSecond,
+				frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom, particleCount,
 				particleTexture, particleName, particleMass, particleRadius, particlePositionX, particlePositionY,
 				particleVelocity, particleVelocityX, particleVelocityY));
 
@@ -259,7 +256,7 @@ public class GUIRenderer {
 			gui.updateWorldDimensions(staticViewport.getWorldWidth(), staticViewport.getWorldHeight());
 		}
 	}
-	
+
 	public GUI getGUI(int id) {
 		return guis.get(id);
 	}
