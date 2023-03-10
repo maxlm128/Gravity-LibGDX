@@ -11,12 +11,14 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.max128.gravity.Main;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElement;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementEventGroup;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementText;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementTexture;
 import com.max128.gravity.GUIManagement.GUIs.GUI;
 import com.max128.gravity.GUIManagement.GUIs.GameGUI;
+import com.max128.gravity.GUIManagement.GUIs.MainMenuGUI;
 
 /** Class for rendering and managing all GUIs **/
 public class GUIRenderer {
@@ -24,6 +26,7 @@ public class GUIRenderer {
 	private SpriteBatch batch;
 	private BitmapFont font;
 	private DecimalFormat dF;
+	private Main main;
 
 	// Variables for GUIs
 	// SimulationGUI
@@ -51,9 +54,10 @@ public class GUIRenderer {
 	private Viewport staticViewport;
 	private Array<GUI> guis;
 
-	public GUIRenderer(SpriteBatch batch, Viewport staticViewport, int gameSteps) {
+	public GUIRenderer(SpriteBatch batch, Viewport staticViewport, int gameSteps, Main main) {
 
 		this.staticViewport = staticViewport;
+		this.main = main;
 
 		// Variable GUIElements for the GUIs
 		// SimulationGUI
@@ -79,10 +83,11 @@ public class GUIRenderer {
 		// Setup of the GUIs
 		guis = new Array<>(10);
 		// Simulation GUI
-		guis.add(new GameGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), framesPerSecond,
-				frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom, particleCount,
-				particleTexture, particleName, particleMass, particleRadius, particlePositionX, particlePositionY,
-				particleVelocity, particleVelocityX, particleVelocityY));
+		guis.add(new MainMenuGUI(true, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), this));
+		guis.add(new GameGUI(false, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), this,
+				framesPerSecond, frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom,
+				particleCount, particleTexture, particleName, particleMass, particleRadius, particlePositionX,
+				particlePositionY, particleVelocity, particleVelocityX, particleVelocityY));
 
 		this.batch = batch;
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -149,6 +154,7 @@ public class GUIRenderer {
 			if (gui.visible) {
 				for (GUIElement guiElement : gui.getGUIElements()) {
 					drawGUIElement(guiElement, guiElement.pos.x, guiElement.pos.y);
+					((GUI) gui).animate();
 				}
 			}
 		}
@@ -164,7 +170,7 @@ public class GUIRenderer {
 	public void drawGUIElement(GUIElement guiElement, float posx, float posy) {
 		if (guiElement.visible) {
 			if (guiElement instanceof GUIElementText) {
-				font.draw(batch, ((GUIElementText) guiElement).getTextContent(), posx, posy);
+				font.draw(batch, ((GUIElementText) guiElement).getTextContent(), posx, posy + font.getLineHeight());
 			} else if (guiElement instanceof GUIElementEventGroup) {
 				for (GUIElement subGUIElement : ((GUIElementEventGroup) guiElement).subGuiElements) {
 					drawGUIElement(subGUIElement, posx + subGUIElement.pos.x, posy + subGUIElement.pos.y);
@@ -259,5 +265,13 @@ public class GUIRenderer {
 
 	public GUI getGUI(int id) {
 		return guis.get(id);
+	}
+
+	public void guiVisibility(int id, boolean visible) {
+		guis.get(id).visible = visible;
+	}
+	
+	public void gameRendering(boolean running) {
+		main.simulationRunning = running;
 	}
 }

@@ -23,6 +23,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	private float zoomTarget;
 	private Particle camFixedTo;
+	public boolean simulationRunning;
 
 	private Viewport mainViewport;
 	private Viewport farGridViewport;
@@ -56,7 +57,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		eM = new EntityManager();
 		sR = new ShapeRenderer();
 		batch = new SpriteBatch();
-		guiR = new GUIRenderer(batch, staticViewport, eM.STEPS);
+		guiR = new GUIRenderer(batch, staticViewport, eM.STEPS, this);
 
 		if (eM.getP().size > 0) {
 			camFixedTo = eM.getP().get(0);
@@ -67,14 +68,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		zoomTarget = mainCam.zoom;
 
 		// Update the GUIVariables on startup
-		//Simulation GUI
+		// Simulation GUI
 		guiR.updateCameraZoom((float) Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100f);
 		guiR.updateGameSpeed(eM.speed);
 		guiR.updateGameState(eM.running);
 		guiR.updateGameSteps(eM.STEPS);
 		guiR.updateParticleCount(eM.getP().size);
 		guiR.updateTimeElapsed(eM.elapsedTime);
-		//ParticleGUI
+		// ParticleGUI
 		guiR.updateParticleName(camFixedTo.name);
 		guiR.updateParticleTexure(camFixedTo.tex);
 		guiR.updateParticleMass(camFixedTo.m);
@@ -100,53 +101,58 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
-		// Update variables
-		guiR.updateTimeElapsed(eM.elapsedTime);
-		if(camFixedTo != null) {
-			guiR.updateParticlePosition(camFixedTo.pos);
-			guiR.updateParticleVelocity(camFixedTo.vel);
+		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
+		if (simulationRunning) {
+			// Update variables
+			guiR.updateTimeElapsed(eM.elapsedTime);
+			if (camFixedTo != null) {
+				guiR.updateParticlePosition(camFixedTo.pos);
+				guiR.updateParticleVelocity(camFixedTo.vel);
+			}
+
+			// Calculations
+			zoomToTarget(Gdx.graphics.getDeltaTime());
+			checkForInput();
+			eM.moveParticles(Gdx.graphics.getDeltaTime());
+
+			// ShapeRenderer rendering preperation
+			Gdx.gl.glEnable(GL20.GL_BLEND);
+			Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			sR.begin();
+			sR.set(ShapeType.Filled);
+
+			// Rendering with Shaperenderer
+			double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
+			drawGrids(factor);
+			drawFarParticles();
+
+			// ShapeRenderer rendering postprocessing
+			sR.end();
+			Gdx.gl.glDisable(GL20.GL_BLEND);
 		}
 
-		// Calculations
-		zoomToTarget(Gdx.graphics.getDeltaTime());
-		checkForInput();
-		eM.moveParticles(Gdx.graphics.getDeltaTime());
-
-		// ShapeRenderer rendering preperation
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		sR.begin();
-		sR.set(ShapeType.Filled);
-		ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
-
-		// Rendering with Shaperenderer
-		double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
-		drawGrids(factor);
-		drawFarParticles();
-
-		// ShapeRenderer rendering postprocessing
-		sR.end();
-		Gdx.gl.glDisable(GL20.GL_BLEND);
-
 		// SpriteBatch rendering preperation
-		batch.setProjectionMatrix(mainCam.combined);
 		batch.begin();
+		if (simulationRunning) {
+			batch.setProjectionMatrix(mainCam.combined);
 
-		// Rendering with spriteBatch
-		drawNearParticles();
+			// Rendering with spriteBatch
+			drawNearParticles();
+			
+			// Update camera position to fixed position
+			updateToFixedPos();
+		}
 		guiR.drawCurrentGUIs();
-//		guiR.drawHUD((float) factor, camFixedTo);
 
 		// SpriteBatch rendering postprocessing
 		batch.end();
 
-		// Update camera position to fixed position
-		updateToFixedPos();
-
 		// Updating Cameras
-		mainCam.update();
-		farGridCam.update();
-		nearGridCam.update();
+		if(simulationRunning) {	
+			mainCam.update();
+			farGridCam.update();
+			nearGridCam.update();
+		}
 		super.render();
 	}
 
@@ -192,7 +198,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	/** Draw far particles with ShapeRenderer **/
-	// TODO: Fix far particle drawing
 	private void drawFarParticles() {
 		sR.setColor(1f, 1f, 1f, 1f);
 		sR.setProjectionMatrix(staticCam.combined);
@@ -235,6 +240,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	/** Checks for inputs from the keyboard and reacts **/
 	private void checkForInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+			simulationRunning = !simulationRunning;
 			camFixedTo = null;
 			mainCam.position.y += 20f * mainCam.zoom;
 		}
@@ -302,36 +308,48 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			mainCam.position.setZero();
 			zoomTarget = 1f;
 			mainCam.zoom = 1f;
+			guiR.updateCameraZoom((float) (Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100));
+			break;
+		case Input.Keys.ESCAPE:
+			simulationRunning = false;
+			guiR.guiVisibility(0, true);
+			guiR.guiVisibility(1, false);
 		}
 		return true;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		camFixedTo = eM.posInParticle(mainCam.unproject(new Vector3(screenX, screenY, 0)));
-		if(camFixedTo != null) {
-			guiR.updateParticleName(camFixedTo.name);
-			guiR.updateParticleTexure(camFixedTo.tex);
-			guiR.updateParticleMass(camFixedTo.m);
-			guiR.updateParticleRadius(camFixedTo.r);
+		if(simulationRunning) {			
+			camFixedTo = eM.posInParticle(mainCam.unproject(new Vector3(screenX, screenY, 0)));
+			if (camFixedTo != null) {
+				guiR.updateParticleName(camFixedTo.name);
+				guiR.updateParticleTexure(camFixedTo.tex);
+				guiR.updateParticleMass(camFixedTo.m);
+				guiR.updateParticleRadius(camFixedTo.r);
+			}
 		}
 		guiR.processClick(screenX, screenY);
-		guiR.getGUI(0).getGUIElements().get(1).visible = camFixedTo != null;
+		if(simulationRunning) guiR.getGUI(0).getGUIElements().get(1).visible = camFixedTo != null;
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		camFixedTo = null;
-		mainCam.position.add(Gdx.input.getDeltaX() * -mainCam.zoom, Gdx.input.getDeltaY() * mainCam.zoom, 0);
-		mainCam.update();
-		return false;
+		if(simulationRunning) {			
+			camFixedTo = null;
+			mainCam.position.add(Gdx.input.getDeltaX() * -mainCam.zoom, Gdx.input.getDeltaY() * mainCam.zoom, 0);
+			mainCam.update();
+		}
+		return true;
 	}
 
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
-		zoomTarget += zoomTarget * amountY * 0.3f;
-		mainCam.update();
+		if(simulationRunning) {			
+			zoomTarget += zoomTarget * amountY * 0.3f;
+			mainCam.update();
+		}
 		return true;
 	}
 

@@ -7,6 +7,14 @@ public class GUIElementTexture extends GUIElement {
 	public float width;
 	public float height;
 
+	/**
+	 * Creates a new GUIElement which contains a texture
+	 * @param posx ,position x
+	 * @param posy ,position y
+	 * @param width ,width
+	 * @param height ,height
+	 * @param texture ,texture of the type Texture
+	 */
 	public GUIElementTexture(float posx, float posy, float width, float height, Texture texture) {
 		super(posx, posy);
 		this.width = width;

@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.Array;
 
 /**
  * A GUI element group, which stores elements, which positions are now rendered
- * relative to the position of the element group
+ * relative to the position of the element group. Has a width and height
  **/
 public class GUIElementEventGroup extends GUIElement {
 	public Array<GUIElement> subGuiElements;
@@ -15,6 +15,9 @@ public class GUIElementEventGroup extends GUIElement {
 	 * 
 	 * @param posx ,the x position of the GUI Element
 	 * @param posy ,the y position of the GUI Element
+	 * @param width ,width of the Group being in the Event area
+	 * @param height ,height of the Group being in the Event area
+	 * 
 	 **/
 	public GUIElementEventGroup(float posx, float posy, int width, int height) {
 		super(posx, posy);
