@@ -19,6 +19,7 @@ import com.max128.gravity.GUIManagement.GUIElements.GUIElementTexture;
 import com.max128.gravity.GUIManagement.GUIs.GUI;
 import com.max128.gravity.GUIManagement.GUIs.GameGUI;
 import com.max128.gravity.GUIManagement.GUIs.MainMenuGUI;
+import com.max128.gravity.GUIManagement.GUIs.SettingsGUI;
 
 /** Class for rendering and managing all GUIs **/
 public class GUIRenderer {
@@ -88,6 +89,7 @@ public class GUIRenderer {
 				framesPerSecond, frameTime, gameState, gameSpeed, this.gameSteps, timeElapsed, cameraZoom,
 				particleCount, particleTexture, particleName, particleMass, particleRadius, particlePositionX,
 				particlePositionY, particleVelocity, particleVelocityX, particleVelocityY));
+		guis.add(new SettingsGUI(false, staticViewport.getWorldWidth(), staticViewport.getWorldHeight(), this));
 
 		this.batch = batch;
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -111,6 +113,14 @@ public class GUIRenderer {
 		for (GUI gui : guis) {
 			if (gui.visible) {
 				gui.processHover(screenX, screenY);
+			}
+		}
+	}
+	
+	public void processKeyboardInput(int keycode) {
+		for (GUI gui: guis) {
+			if(gui.visible) {
+				gui.processKeyboardInput(keycode);
 			}
 		}
 	}
@@ -267,6 +277,11 @@ public class GUIRenderer {
 		return guis.get(id);
 	}
 
+	/**
+	 * Updates the visibility of a gui
+	 * @param id, the id of the selected gui
+	 * @param visible, boolean for the visibility the gui is updated toS
+	 */
 	public void guiVisibility(int id, boolean visible) {
 		guis.get(id).visible = visible;
 	}

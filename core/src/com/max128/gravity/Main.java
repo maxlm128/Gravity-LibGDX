@@ -138,7 +138,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 			// Rendering with spriteBatch
 			drawNearParticles();
-			
+
 			// Update camera position to fixed position
 			updateToFixedPos();
 		}
@@ -148,7 +148,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		batch.end();
 
 		// Updating Cameras
-		if(simulationRunning) {	
+		if (simulationRunning) {
 			mainCam.update();
 			farGridCam.update();
 			nearGridCam.update();
@@ -240,7 +240,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	/** Checks for inputs from the keyboard and reacts **/
 	private void checkForInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-			simulationRunning = !simulationRunning;
 			camFixedTo = null;
 			mainCam.position.y += 20f * mainCam.zoom;
 		}
@@ -283,44 +282,49 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		switch (keycode) {
-		case Input.Keys.SPACE:
-			eM.running = !eM.running;
-			guiR.updateGameState(eM.running);
-			break;
-		case Input.Keys.F11:
-			if (!Gdx.graphics.isFullscreen()) {
-				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-			} else {
-				Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
+		guiR.processKeyboardInput(keycode);
+		if (simulationRunning) {
+			switch (keycode) {
+			case Input.Keys.SPACE:
+				eM.running = !eM.running;
+				guiR.updateGameState(eM.running);
+				break;
+			case Input.Keys.F11:
+				if (!Gdx.graphics.isFullscreen()) {
+					Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+				} else {
+					Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
+				}
+				break;
+			case Input.Keys.UP:
+				eM.speed *= 2;
+				guiR.updateGameSpeed(eM.speed);
+				break;
+			case Input.Keys.DOWN:
+				eM.speed *= 0.5f;
+				guiR.updateGameSpeed(eM.speed);
+				break;
+			case Input.Keys.R:
+				camFixedTo = null;
+				mainCam.position.setZero();
+				zoomTarget = 1f;
+				mainCam.zoom = 1f;
+				guiR.updateCameraZoom((float) (Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100));
+				break;
+			case Input.Keys.ESCAPE:
+				simulationRunning = false;
+				guiR.guiVisibility(0, true);
+				guiR.guiVisibility(1, false);
 			}
-			break;
-		case Input.Keys.UP:
-			eM.speed *= 2;
-			guiR.updateGameSpeed(eM.speed);
-			break;
-		case Input.Keys.DOWN:
-			eM.speed *= 0.5f;
-			guiR.updateGameSpeed(eM.speed);
-			break;
-		case Input.Keys.R:
-			camFixedTo = null;
-			mainCam.position.setZero();
-			zoomTarget = 1f;
-			mainCam.zoom = 1f;
-			guiR.updateCameraZoom((float) (Math.pow(10, Math.ceil(Math.log10(mainCam.zoom))) * 100));
-			break;
-		case Input.Keys.ESCAPE:
-			simulationRunning = false;
-			guiR.guiVisibility(0, true);
-			guiR.guiVisibility(1, false);
+			return true;
+		} else {
+			return false;
 		}
-		return true;
 	}
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(simulationRunning) {			
+		if (simulationRunning) {
 			camFixedTo = eM.posInParticle(mainCam.unproject(new Vector3(screenX, screenY, 0)));
 			if (camFixedTo != null) {
 				guiR.updateParticleName(camFixedTo.name);
@@ -330,13 +334,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			}
 		}
 		guiR.processClick(screenX, screenY);
-		if(simulationRunning) guiR.getGUI(0).getGUIElements().get(1).visible = camFixedTo != null;
+		if (simulationRunning)
+			guiR.getGUI(0).getGUIElements().get(1).visible = camFixedTo != null;
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		if(simulationRunning) {			
+		if (simulationRunning) {
 			camFixedTo = null;
 			mainCam.position.add(Gdx.input.getDeltaX() * -mainCam.zoom, Gdx.input.getDeltaY() * mainCam.zoom, 0);
 			mainCam.update();
@@ -346,7 +351,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
-		if(simulationRunning) {			
+		if (simulationRunning) {
 			zoomTarget += zoomTarget * amountY * 0.3f;
 			mainCam.update();
 		}

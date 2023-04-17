@@ -44,9 +44,11 @@ public class GUI {
 	 **/
 	public void updateWorldDimensions(float screenWidth, float screenHeight) {}
 	
-	public void processClick(int screenX, int screenY) {	}
+	public void processClick(int screenX, int screenY) {}
 	
 	public void processHover(int screenX, int screenY) {}
+	
+	public void processKeyboardInput(int keycode) {}
 	
 	public void animate() {}
 }
