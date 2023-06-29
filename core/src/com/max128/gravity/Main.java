@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -106,8 +107,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			// Update variables
 			guiR.updateTimeElapsed(eM.elapsedTime);
 			if (camFixedTo != null) {
-				guiR.updateParticlePosition(camFixedTo.pos);
-				guiR.updateParticleVelocity(camFixedTo.vel);
+				guiR.updateParticlePosition(new Vector2(camFixedTo.pos.x.floatValue(),camFixedTo.pos.y.floatValue()));
+				guiR.updateParticleVelocity(new Vector2(camFixedTo.vel.x.floatValue(),camFixedTo.vel.y.floatValue()));
 			}
 
 			// Calculations
@@ -192,7 +193,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		sR.setColor(1, 1, 1, 1);
 		for (Particle p : eM.getP()) {
 			if (p.r / mainCam.zoom >= 1) {
-				batch.draw(p.tex, p.pos.x - p.r, p.pos.y - p.r, p.r * 2, p.r * 2);
+				batch.draw(p.tex, p.pos.x.floatValue() - p.r, p.pos.y.floatValue() - p.r, p.r * 2, p.r * 2);
 			}
 		}
 	}
@@ -203,8 +204,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		sR.setProjectionMatrix(staticCam.combined);
 		for (Particle p : eM.getP()) {
 			if (p.r / mainCam.zoom < 1) {
-				sR.circle((-mainCam.position.x + p.pos.x) / mainCam.zoom,
-						(-mainCam.position.y + p.pos.y) / mainCam.zoom, 1, 10);
+				sR.circle((-mainCam.position.x + p.pos.x.floatValue()) / mainCam.zoom,
+						(-mainCam.position.y + p.pos.y.floatValue()) / mainCam.zoom, 1, 10);
 			}
 		}
 	}
@@ -212,8 +213,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	/** Update camera position to fixed Particle **/
 	private void updateToFixedPos() {
 		if (camFixedTo != null) {
-			mainCam.position.x = camFixedTo.pos.x;
-			mainCam.position.y = camFixedTo.pos.y;
+			mainCam.position.x = camFixedTo.pos.x.floatValue();
+			mainCam.position.y = camFixedTo.pos.y.floatValue();
 		}
 	}
 

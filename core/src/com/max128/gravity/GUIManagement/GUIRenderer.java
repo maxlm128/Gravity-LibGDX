@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.max128.gravity.BigVector2;
 import com.max128.gravity.Main;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElement;
 import com.max128.gravity.GUIManagement.GUIElements.GUIElementEventGroup;
