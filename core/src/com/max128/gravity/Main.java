@@ -43,13 +43,15 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void create() {
+		System.out.println(Runtime.getRuntime().availableProcessors());
+		
 		Textures.loadTextures();
 
 		// Viewports and Cameras
 		mainCam = new OrthographicCamera(WIDTH, HEIGHT);
 		farGridCam = new OrthographicCamera(WIDTH, HEIGHT);
 		nearGridCam = new OrthographicCamera(WIDTH, HEIGHT);
-		staticCam = new OrthographicCamera(Main.WIDTH, Main.HEIGHT);
+		staticCam = new OrthographicCamera(WIDTH, HEIGHT);
 		mainViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), mainCam);
 		farGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), farGridCam);
 		nearGridViewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), nearGridCam);
@@ -107,13 +109,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 			// Update variables
 			guiR.updateTimeElapsed(eM.elapsedTime);
 			if (camFixedTo != null) {
-				guiR.updateParticlePosition(new Vector2(camFixedTo.pos.x.floatValue(),camFixedTo.pos.y.floatValue()));
-				guiR.updateParticleVelocity(new Vector2(camFixedTo.vel.x.floatValue(),camFixedTo.vel.y.floatValue()));
+				guiR.updateParticlePosition(new Vector2(camFixedTo.pos.x.floatValue(), camFixedTo.pos.y.floatValue()));
+				guiR.updateParticleVelocity(new Vector2(camFixedTo.vel.x.floatValue(), camFixedTo.vel.y.floatValue()));
 			}
 
 			// Calculations
 			zoomToTarget(Gdx.graphics.getDeltaTime());
-			checkForInput();
+			checkForInput(Gdx.graphics.getDeltaTime());
 			eM.moveParticles(Gdx.graphics.getDeltaTime());
 
 			// ShapeRenderer rendering preperation
@@ -239,28 +241,28 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	/** Checks for inputs from the keyboard and reacts **/
-	private void checkForInput() {
+	private void checkForInput(float dt) {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			camFixedTo = null;
-			mainCam.position.y += 20f * mainCam.zoom;
+			mainCam.position.y += 2000f * mainCam.zoom * dt;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.S)) {
 			camFixedTo = null;
-			mainCam.position.y -= 20f * mainCam.zoom;
+			mainCam.position.y -= 2000f * mainCam.zoom * dt;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
 			camFixedTo = null;
-			mainCam.position.x += 20f * mainCam.zoom;
+			mainCam.position.x += 2000f * mainCam.zoom * dt;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			camFixedTo = null;
-			mainCam.position.x -= 20f * mainCam.zoom;
+			mainCam.position.x -= 2000f * mainCam.zoom * dt;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-			zoomTarget += zoomTarget * 0.03f;
+			zoomTarget += zoomTarget * 3f * dt;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-			zoomTarget += zoomTarget * -0.03f;
+			zoomTarget += zoomTarget * -3f * dt;
 		}
 	}
 
@@ -270,14 +272,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	 * @param dt ,delta time of the type float
 	 **/
 	private void zoomToTarget(float dt) {
-		if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
-			mainCam.zoom += (zoomTarget - mainCam.zoom) * dt * 7;
-			double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
-			guiR.updateCameraZoom((float) (factor * 100));
-		} else if (mainCam.zoom != zoomTarget) {
-			mainCam.zoom = zoomTarget;
-			double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
-			guiR.updateCameraZoom((float) (factor * 100));
+		if (mainCam.zoom != zoomTarget) {
+			if (Math.abs(mainCam.zoom - zoomTarget) >= 0.001f * mainCam.zoom) {
+				mainCam.zoom += (zoomTarget - mainCam.zoom) * dt * 7;
+				double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
+				guiR.updateCameraZoom((float) (factor * 100));
+			} else {
+				mainCam.zoom = zoomTarget;
+				double factor = Math.pow(10, Math.ceil(Math.log10(mainCam.zoom)));
+				guiR.updateCameraZoom((float) (factor * 100));
+			}
 		}
 	}
 
